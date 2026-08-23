@@ -1271,10 +1271,33 @@ const firebaseConfig = {
       (typeof v5Selfie !== "undefined" ? v5Selfie : "") ||
       "";
 
-    const loggedInUser = (typeof currentUser !== "undefined") ? currentUser : window.currentUser;
+    /* Resolve the signed-in user from every place this app can store it.
+       This is intentionally independent of window.currentUser because the
+       original app declares currentUser with let, so it is not a window property. */
+    let loggedInUser = null;
+
+    try {
+      if (typeof currentUser !== "undefined" && currentUser) {
+        loggedInUser = currentUser;
+      }
+    } catch (e) {}
 
     if (!loggedInUser) {
-      alert("Please log in before submitting the volunteer application.");
+      try {
+        const savedUser = localStorage.getItem("kumbhCurrentUser");
+        if (savedUser) loggedInUser = JSON.parse(savedUser);
+      } catch (e) {}
+    }
+
+    if (!loggedInUser) {
+      try {
+        const v5User = (typeof v5Current === "function") ? v5Current() : null;
+        if (v5User && !v5User.appId) loggedInUser = v5User;
+      } catch (e) {}
+    }
+
+    if (!loggedInUser || !loggedInUser.id) {
+      alert("Your login session could not be read. Please log out and log in again.");
       return;
     }
 
@@ -1297,6 +1320,11 @@ const firebaseConfig = {
 
     try {
       const user = loggedInUser;
+
+      try {
+        if (typeof currentUser !== "undefined" && !currentUser) currentUser = user;
+      } catch (e) {}
+      try { localStorage.setItem("kumbhCurrentUser", JSON.stringify(user)); } catch (e) {}
       const app = {
         userId: user.id || "",
         name: user.name || "",
