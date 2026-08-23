@@ -823,7 +823,7 @@ async function startSelfieV5(){
 function captureSelfieV5(){
   if(!v5Video.srcObject)return alert('Start the camera first.');
   const c=v5Canvas;c.width=v5Video.videoWidth||640;c.height=v5Video.videoHeight||480;c.getContext('2d').drawImage(v5Video,0,0,c.width,c.height);
-  v5Selfie=c.toDataURL('image/jpeg',.8);v5SelfiePreview.src=v5Selfie;v5SelfiePreview.classList.remove('hiddenv5');stopSelfieV5();
+  v5Selfie=c.toDataURL('image/jpeg',.8);window.v5Selfie=v5Selfie;v5SelfiePreview.src=v5Selfie;v5SelfiePreview.classList.remove('hiddenv5');stopSelfieV5();
 }
 function stopSelfieV5(){if(v5Stream){v5Stream.getTracks().forEach(t=>t.stop());v5Stream=null;}}
 function submitVolunteerApplicationV5(){
@@ -1337,7 +1337,8 @@ const firebaseConfig = {
     const guideExperience = document.getElementById('v12GuideExperience')?.value.trim() || '';
 
     if (!currentUser) return alert('Please log in before submitting a volunteer application.');
-    if (!email || !phone || !area || !reason || !govType || !gov || !window.v5Selfie) {
+    const capturedSelfie = window.v5Selfie || (typeof v5Selfie !== 'undefined' ? v5Selfie : null);
+    if (!email || !phone || !area || !reason || !govType || !gov || !capturedSelfie) {
       return alert('Please complete every required field, upload a Government ID and capture a live selfie.');
     }
 
@@ -1360,7 +1361,7 @@ const firebaseConfig = {
         govType,
         govFileName: gov.name,
         govPreview,
-        selfie: window.v5Selfie,
+        selfie: capturedSelfie,
         status: 'PENDING',
         appliedAt: new Date().toLocaleString(),
         credentialsDelivered: false,
