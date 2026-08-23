@@ -823,7 +823,7 @@ async function startSelfieV5(){
 function captureSelfieV5(){
   if(!v5Video.srcObject)return alert('Start the camera first.');
   const c=v5Canvas;c.width=v5Video.videoWidth||640;c.height=v5Video.videoHeight||480;c.getContext('2d').drawImage(v5Video,0,0,c.width,c.height);
-  v5Selfie=c.toDataURL('image/jpeg',.8);window.v5Selfie=v5Selfie;v5SelfiePreview.src=v5Selfie;v5SelfiePreview.classList.remove('hiddenv5');stopSelfieV5();
+  v5Selfie=c.toDataURL('image/jpeg',.65);window.v5Selfie=v5Selfie;v5SelfiePreview.src=v5Selfie;v5SelfiePreview.classList.remove('hiddenv5');stopSelfieV5();
 }
 function stopSelfieV5(){if(v5Stream){v5Stream.getTracks().forEach(t=>t.stop());v5Stream=null;}}
 function submitVolunteerApplicationV5(){
@@ -1243,6 +1243,7 @@ const _approveV11=approveVolunteer;approveVolunteer=function(id){_approveV11(id)
 <!-- KUMBH RAKSHAK: FIREBASE REAL-TIME VOLUNTEER SYNC -->
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
 <script>
 /* ============================================================
    FIREBASE SETUP
@@ -1250,7 +1251,7 @@ const _approveV11=approveVolunteer;approveVolunteer=function(id){_approveV11(id)
    Firebase Console -> Project settings -> Your apps -> Web app
    ============================================================ */
 const firebaseConfig = {
-  apiKey: "AIzaSyBH4Pp6SAgOA4Hb6qdj5ek_6Bc6PYrJHY8",
+ apiKey: "AIzaSyBH4Pp6SAgOA4Hb6qdj5ek_6Bc6PYrJHY8",
   authDomain: "kumbh-rakshak-2027.firebaseapp.com",
   projectId: "kumbh-rakshak-2027",
   storageBucket: "kumbh-rakshak-2027.firebasestorage.app",
@@ -1306,23 +1307,49 @@ const firebaseConfig = {
     alert('Cloud sync error: ' + error.message + '\nCheck Firebase Firestore rules and configuration.');
   });
 
+  const storage = firebase.storage();
+
+  async function withTimeout(promise, ms, label) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => reject(new Error(label + ' timed out after ' + Math.round(ms/1000) + ' seconds.')), ms);
+    });
+    try { return await Promise.race([promise, timeout]); }
+    finally { clearTimeout(timer); }
+  }
+
+  function dataUrlToBlob(dataUrl) {
+    const parts = dataUrl.split(',');
+    const mime = (parts[0].match(/data:(.*?);base64/) || [,'image/jpeg'])[1];
+    const bytes = atob(parts[1]);
+    const arr = new Uint8Array(bytes.length);
+    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+    return new Blob([arr], {type:mime});
+  }
+
+  async function uploadVolunteerFile(fileOrBlob, path, contentType) {
+    const ref = storage.ref().child(path);
+    const task = ref.put(fileOrBlob, {contentType: contentType || fileOrBlob.type || 'application/octet-stream'});
+    await withTimeout(task, 30000, 'File upload');
+    return await withTimeout(ref.getDownloadURL(), 15000, 'File URL request');
+  }
+
   async function createCloudApplication(data) {
     const payload = Object.assign({}, data, {
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     delete payload.id;
-    const ref = await applicationsRef.add(payload);
-    return ref.id;
+    return await withTimeout(applicationsRef.add(payload), 20000, 'Firebase database save');
   }
 
   async function updateCloudApplication(id, changes) {
-    await applicationsRef.doc(id).update(Object.assign({}, changes, {
+    await withTimeout(applicationsRef.doc(id).update(Object.assign({}, changes, {
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }));
+    })), 20000, 'Firebase database update');
   }
 
-  // Final override: submit application directly to Firestore.
+  // Final override: submit application to Firebase Storage + Firestore.
   window.submitVolunteerApplicationV5 = async function() {
     if (!firebaseReady) return alert('Connecting to cloud database. Please wait a moment and try again.');
 
@@ -1335,33 +1362,40 @@ const firebaseConfig = {
     const role = document.getElementById('v5Role')?.value || 'Ground Volunteer';
     const guideInterest = !!document.getElementById('v12GuideInterest')?.checked;
     const guideExperience = document.getElementById('v12GuideExperience')?.value.trim() || '';
+    const selfieData = window.v5Selfie || v5Selfie || '';
 
     if (!currentUser) return alert('Please log in before submitting a volunteer application.');
-    const capturedSelfie = window.v5Selfie || (typeof v5Selfie !== 'undefined' ? v5Selfie : null);
-    if (!email || !phone || !area || !reason || !govType || !gov || !capturedSelfie) {
+    if (!email || !phone || !area || !reason || !govType || !gov || !selfieData) {
       return alert('Please complete every required field, upload a Government ID and capture a live selfie.');
     }
 
     const submitButton = [...document.querySelectorAll('#v5Modal button')]
       .find(b => b.textContent.includes('SUBMIT FOR ADMIN APPROVAL'));
-    if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'SUBMITTING...'; }
+    if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'UPLOADING...'; }
 
     try {
-      const govPreview = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = e => resolve(e.target.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(gov);
-      });
+      // IMPORTANT: Do NOT put ID/selfie base64 inside Firestore.
+      // Firestore documents have a 1 MiB limit; files belong in Firebase Storage.
+      const safeUserId = String(currentUser.id).replace(/[^a-zA-Z0-9_-]/g, '_');
+      const stamp = Date.now();
+      const govPath = `volunteer-verification/${safeUserId}/${stamp}-government-id-${gov.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
+      const selfieBlob = dataUrlToBlob(selfieData);
+      const selfiePath = `volunteer-verification/${safeUserId}/${stamp}-live-selfie.jpg`;
 
+      if (submitButton) submitButton.textContent = 'UPLOADING ID...';
+      const govUrl = await uploadVolunteerFile(gov, govPath, gov.type || 'application/octet-stream');
+      if (submitButton) submitButton.textContent = 'UPLOADING SELFIE...';
+      const selfieUrl = await uploadVolunteerFile(selfieBlob, selfiePath, 'image/jpeg');
+
+      if (submitButton) submitButton.textContent = 'SAVING...';
       const app = {
         userId: currentUser.id,
         name: currentUser.name,
         phone, email, area, role, reason,
         govType,
         govFileName: gov.name,
-        govPreview,
-        selfie: capturedSelfie,
+        govUrl,
+        selfieUrl,
         status: 'PENDING',
         appliedAt: new Date().toLocaleString(),
         credentialsDelivered: false,
@@ -1381,10 +1415,10 @@ const firebaseConfig = {
       try { localStorage.setItem('kumbhCurrentUser', JSON.stringify(currentUser)); } catch(e) {}
       if (typeof stopSelfieV5 === 'function') stopSelfieV5();
       if (typeof closeV5Modal === 'function') closeV5Modal();
-      alert('Application submitted successfully. It will now appear on the Admin dashboard on your laptop and all other synced devices.');
+      alert('Application submitted successfully. It is now synced to the Admin dashboard on your laptop and all other devices.');
     } catch (error) {
-      console.error(error);
-      alert('Could not submit application: ' + error.message);
+      console.error('Volunteer submission error:', error);
+      alert('Could not submit application: ' + (error?.message || error));
       if (submitButton) { submitButton.disabled = false; submitButton.textContent = 'SUBMIT FOR ADMIN APPROVAL'; }
     }
   };
