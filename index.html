@@ -1103,142 +1103,7 @@ const _approveV11=approveVolunteer;approveVolunteer=function(id){_approveV11(id)
 .guide-badge{display:inline-block;padding:4px 9px;border-radius:999px;background:#e9f3ff;font-size:12px;margin-left:6px}
 .guide-request-card{border-left:4px solid #6b4bb5;padding-left:12px}
 </style>
-<script>
-/* V12: Volunteer can also become a guide + real reset endpoint support */
-(function(){
-  const originalShowVolunteerApplicationV12=showVolunteerApplication;
-  showVolunteerApplication=function(){
-    originalShowVolunteerApplicationV12();
-    setTimeout(()=>{
-      const role=document.getElementById('v5Role');
-      if(role && ![...role.options].some(o=>o.value==='Local Guide / Volunteer Guide')){
-        role.insertAdjacentHTML('beforeend','<option>Local Guide / Volunteer Guide</option>');
-      }
-      const reason=document.getElementById('v5Reason');
-      if(reason && !document.getElementById('v12GuideSkills')){
-        reason.insertAdjacentHTML('beforebegin',
-          '<div id="v12GuideSkills" class="file-box"><b>Guide option</b><br><label><input id="v12GuideInterest" type="checkbox"> I am also interested in working as a local guide</label><textarea id="v12GuideExperience" placeholder="Guide experience, languages, local knowledge or places you can demonstrate"></textarea></div>');
-      }
-    },0);
-  };
 
-  const originalSubmitVolunteerApplicationV12=submitVolunteerApplicationV5;
-  submitVolunteerApplicationV5=function(){
-    const email=document.getElementById('v5Email')?.value.trim();
-    const phone=document.getElementById('v5Phone')?.value.trim();
-    const area=document.getElementById('v5Area')?.value.trim();
-    const reason=document.getElementById('v5Reason')?.value.trim();
-    const gov=document.getElementById('v5GovFile')?.files[0];
-    const govType=document.getElementById('v5GovType')?.value;
-    if(!email||!phone||!area||!reason||!govType||!gov||!window.v5Selfie) return originalSubmitVolunteerApplicationV12();
-
-    const guideInterest=!!document.getElementById('v12GuideInterest')?.checked;
-    const guideExperience=document.getElementById('v12GuideExperience')?.value.trim()||'';
-    const reader=new FileReader();
-    reader.onload=e=>{
-      volunteerApplications.push({
-        id:'APP'+Date.now(),userId:currentUser.id,name:currentUser.name,phone,email,area,
-        role:document.getElementById('v5Role').value,reason,govType,govFileName:gov.name,
-        govPreview:e.target.result,selfie:window.v5Selfie,status:'PENDING',
-        appliedAt:new Date().toLocaleString(),credentialsDelivered:false,
-        guideInterest,guideExperience,guideApproved:false
-      });
-      currentUser.email=email;currentUser.phone=phone;
-      saveV5AndRefresh();stopSelfieV5();closeV5Modal();
-      alert('Application submitted for Admin approval.'+(guideInterest?' Your guide interest was also included for review.':''));
-    };
-    reader.readAsDataURL(gov);
-  };
-
-  const oldAdminRenderV12=renderVolunteerApplicationsAdmin;
-  renderVolunteerApplicationsAdmin=function(){
-    oldAdminRenderV12();
-    const apps=volunteerApplications||[];
-    const el=document.getElementById('volunteerApplicationsAdmin');
-    if(!el||!apps.length)return;
-    el.innerHTML=apps.map(a=>`<div class="application guide-request-card">
-      <b>${a.name}</b> <span class="status-${a.status}">${a.status}</span>
-      ${a.guideInterest?'<span class="guide-badge">🧭 GUIDE INTEREST</span>':''}<br>
-      📞 ${a.phone}<br>📧 ${a.email||''}<br>📍 ${a.area}<br>
-      Role: ${a.role}<br><small>${a.reason}</small>
-      ${a.guideInterest?`<br><small><b>Guide details:</b> ${a.guideExperience||'No extra details provided.'}</small>`:''}
-      ${a.status==='PENDING'?`<div class="grid"><button class="green" onclick="approveVolunteer('${a.id}')">APPROVE & ISSUE TEMP ID</button><button class="red" onclick="rejectVolunteer('${a.id}')">REJECT</button></div>`:
-        a.status==='APPROVED'?`<p><b>Volunteer ID:</b> ${a.volunteerId}<br><b>Temp password:</b> ${a.tempPassword}</p>
-        ${a.guideInterest?`<button class="${a.guideApproved?'gray':'purple'}" onclick="toggleGuideApprovalV12('${a.id}')">${a.guideApproved?'✓ GUIDE APPROVED':'🧭 APPROVE AS GUIDE'}</button>`:''}`:''}
-    </div>`).join('');
-  };
-
-  window.toggleGuideApprovalV12=function(id){
-    const a=volunteerApplications.find(x=>x.id===id);
-    if(!a)return;
-    a.guideApproved=!a.guideApproved;
-    saveV5AndRefresh();
-    renderVolunteerApplicationsAdmin();
-    alert(a.guideApproved?'Volunteer is now approved as a guide and can receive guide assignments.':'Guide approval removed.');
-  };
-
-  const oldVolunteerHomeV12=showVolunteerHome;
-  showVolunteerHome=function(){
-    oldVolunteerHomeV12();
-    const a=volunteerApplications.find(x=>x.id===volunteerSession?.appId);
-    const box=document.getElementById('volunteerContent');
-    if(!box)return;
-    const extra=document.createElement('div');
-    extra.className='card';
-    extra.innerHTML=`<h2>🧭 Guide Services</h2>
-      ${a?.guideApproved
-        ? '<p>✅ You are approved as a verified local guide. You can receive and manage guide assignments.</p><button class="purple" onclick="showMyGuideRequestsV12()">VIEW GUIDE REQUESTS</button>'
-        : '<p>Want to guide visitors around ghats, temples and important locations?</p><button class="purple" onclick="applyGuideAsVolunteerV12()">APPLY TO BECOME A GUIDE</button>'}`;
-    box.appendChild(extra);
-  };
-
-  window.applyGuideAsVolunteerV12=function(){
-    const a=volunteerApplications.find(x=>x.id===volunteerSession?.appId);
-    if(!a)return alert('Volunteer session not found.');
-    const details=prompt('Enter your guide experience, languages and local knowledge:');
-    if(details===null)return;
-    a.guideInterest=true;a.guideExperience=details.trim();a.guideRequestedAt=new Date().toLocaleString();
-    saveV5AndRefresh();
-    alert('Your guide request has been sent to Admin for approval.');
-    showVolunteerHome();
-  };
-
-  window.showMyGuideRequestsV12=function(){
-    const a=volunteerApplications.find(x=>x.id===volunteerSession?.appId);
-    const assigned=(guideRequests||[]).filter(g=>g.status==='ASSIGNED' && (!g.guideId || g.guideId===a?.volunteerId));
-    openV5Modal(`<h2>🧭 Guide Requests</h2>${assigned.length?assigned.map(g=>`<div class="guide-card"><b>${g.area}</b><br>${g.name} • ${g.phone}<br>${g.duration}<br>${g.notes||''}</div>`).join(''):'No guide assignments yet.'}<button onclick="closeV5Modal()">CLOSE</button>`);
-  };
-
-  /* Real email sending through Netlify Function. Do not claim success unless endpoint confirms it. */
-  window.sendResetVerification=async function(){
-    const id=document.getElementById('resetIdentifier').value.trim();
-    const norm=s=>String(s||'').toLowerCase().replace(/\s/g,'');
-    const digits=s=>String(s||'').replace(/\D/g,'');
-    resetTarget=resetAccounts().find(a=>norm(a.email)===norm(id)||digits(a.phone)===digits(id));
-    const status=document.getElementById('resetStatus');
-    if(!resetTarget){status.innerHTML='❌ No registered account found with this email or phone number.';return;}
-    resetCode=String(Math.floor(100000+Math.random()*900000));
-    const targetEmail=resetTarget.email||'';
-    if(!targetEmail){
-      status.innerHTML='❌ This account has no registered email address. Add an email to use email reset.';
-      return;
-    }
-    status.innerHTML='⏳ Sending verification code...';
-    try{
-      const r=await fetch('/.netlify/functions/send-reset',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({to:targetEmail,code:resetCode,name:resetTarget.name||'User'})
-      });
-      const data=await r.json().catch(()=>({}));
-      if(!r.ok||!data.ok) throw new Error(data.error||'Email service is not configured.');
-      document.getElementById('resetStep2').classList.remove('hidden');
-      status.innerHTML='📩 Verification code sent to '+targetEmail+'. Check Inbox and Spam.';
-    }catch(err){
-      status.innerHTML='❌ Email could not be sent. '+(err.message||'Configure the Netlify email function and RESEND_API_KEY first.')+'';
-    }
-  };
-})();
-</script>
 
 <!-- KUMBH RAKSHAK: FIREBASE REAL-TIME VOLUNTEER SYNC -->
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -1246,12 +1111,13 @@ const _approveV11=approveVolunteer;approveVolunteer=function(id){_approveV11(id)
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-storage-compat.js"></script>
 <script>
 /* ============================================================
-   FIREBASE SETUP
-   Replace ONLY the values below with your Firebase Web App config.
-   Firebase Console -> Project settings -> Your apps -> Web app
+   KUMBH RAKSHAK - SINGLE FIREBASE VOLUNTEER SYNC
+   This block is intentionally self-contained so older volunteer
+   functions in the prototype cannot override cloud operations.
    ============================================================ */
+
 const firebaseConfig = {
- apiKey: "AIzaSyBH4Pp6SAgOA4Hb6qdj5ek_6Bc6PYrJHY8",
+  apiKey: "AIzaSyBH4Pp6SAgOA4Hb6qdj5ek_6Bc6PYrJHY8",
   authDomain: "kumbh-rakshak-2027.firebaseapp.com",
   projectId: "kumbh-rakshak-2027",
   storageBucket: "kumbh-rakshak-2027.firebasestorage.app",
@@ -1260,246 +1126,445 @@ const firebaseConfig = {
 };
 
 (function () {
-  const isConfigured = () => firebaseConfig.apiKey &&
-    !firebaseConfig.apiKey.includes('PASTE_YOUR') &&
-    firebaseConfig.projectId && !firebaseConfig.projectId.includes('PASTE_YOUR');
+  const configured =
+    firebaseConfig.apiKey &&
+    firebaseConfig.projectId &&
+    !String(firebaseConfig.apiKey).includes("PASTE_YOUR") &&
+    !String(firebaseConfig.projectId).includes("PASTE_YOUR");
 
-  if (!isConfigured()) {
-    console.warn('Firebase is not configured yet. Add your Firebase config to enable phone/laptop sync.');
+  if (!configured) {
+    console.error("Firebase config is not configured.");
     return;
   }
 
-  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  } catch (e) {
+    console.error("Firebase initialization failed:", e);
+    return;
+  }
+
   const db = firebase.firestore();
-  const applicationsRef = db.collection('kumbhVolunteerApplications');
-  window.kumbhDB = db;
-
-  let firebaseReady = false;
-
-  function saveLocalCompatibility() {
-    try { localStorage.setItem('kumbhVolunteerApplications', JSON.stringify(volunteerApplications || [])); } catch(e) {}
-  }
-
-  function refreshAllVolunteerViews() {
-    saveLocalCompatibility();
-    if (typeof renderVolunteerApplicationsAdmin === 'function') {
-      try { renderVolunteerApplicationsAdmin(); } catch(e) { console.error(e); }
-    }
-    if (typeof renderAccountPanel === 'function') {
-      try { renderAccountPanel(); } catch(e) {}
-    }
-    if (typeof refreshAccountCorner === 'function') {
-      try { refreshAccountCorner(); } catch(e) {}
-    }
-  }
-
-  // REAL-TIME SYNC: phone, laptop and every browser see the same applications.
-  applicationsRef.orderBy('createdAt', 'desc').onSnapshot(function(snapshot) {
-    volunteerApplications = snapshot.docs.map(function(doc) {
-      const data = doc.data() || {};
-      data.id = doc.id;
-      return data;
-    });
-    firebaseReady = true;
-    refreshAllVolunteerViews();
-  }, function(error) {
-    console.error('Firestore sync error:', error);
-    alert('Cloud sync error: ' + error.message + '\nCheck Firebase Firestore rules and configuration.');
-  });
-
+  const appsRef = db.collection("kumbhVolunteerApplications");
   const storage = firebase.storage();
 
-  async function withTimeout(promise, ms, label) {
-    let timer;
-    const timeout = new Promise((_, reject) => {
-      timer = setTimeout(() => reject(new Error(label + ' timed out after ' + Math.round(ms/1000) + ' seconds.')), ms);
-    });
-    try { return await Promise.race([promise, timeout]); }
-    finally { clearTimeout(timer); }
+  window.kumbhDB = db;
+  window.kumbhFirebaseReady = false;
+
+  function safeLocalSave() {
+    try {
+      localStorage.setItem(
+        "kumbhVolunteerApplications",
+        JSON.stringify(window.volunteerApplications || [])
+      );
+    } catch (e) {}
   }
 
-  function dataUrlToBlob(dataUrl) {
-    const parts = dataUrl.split(',');
-    const mime = (parts[0].match(/data:(.*?);base64/) || [,'image/jpeg'])[1];
-    const bytes = atob(parts[1]);
-    const arr = new Uint8Array(bytes.length);
-    for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
-    return new Blob([arr], {type:mime});
+  function refreshViews() {
+    safeLocalSave();
+    try {
+      if (typeof renderVolunteerApplicationsAdmin === "function") {
+        renderVolunteerApplicationsAdmin();
+      }
+    } catch (e) {
+      console.error("Admin render error:", e);
+    }
+    try {
+      if (typeof renderAccountPanel === "function") renderAccountPanel();
+    } catch (e) {}
+    try {
+      if (typeof refreshAccountCorner === "function") refreshAccountCorner();
+    } catch (e) {}
   }
 
-  async function uploadVolunteerFile(fileOrBlob, path, contentType) {
-    const ref = storage.ref().child(path);
-    const task = ref.put(fileOrBlob, {contentType: contentType || fileOrBlob.type || 'application/octet-stream'});
-    await withTimeout(task, 30000, 'File upload');
-    return await withTimeout(ref.getDownloadURL(), 15000, 'File URL request');
-  }
+  /* IMPORTANT: do not use orderBy() here.
+     Client-side sorting avoids missing-index problems and also
+     displays older records that may not have createdAt. */
+  appsRef.onSnapshot(
+    function (snapshot) {
+      const list = snapshot.docs.map(function (doc) {
+        const d = doc.data() || {};
+        d.id = doc.id;
+        return d;
+      });
 
-  async function createCloudApplication(data) {
+      list.sort(function (a, b) {
+        const ta = a.createdAt && a.createdAt.toMillis
+          ? a.createdAt.toMillis() : (Date.parse(a.appliedAt || "") || 0);
+        const tb = b.createdAt && b.createdAt.toMillis
+          ? b.createdAt.toMillis() : (Date.parse(b.appliedAt || "") || 0);
+        return tb - ta;
+      });
+
+      window.volunteerApplications = list;
+      window.kumbhFirebaseReady = true;
+      refreshViews();
+      console.log("Firebase volunteer sync: " + list.length + " application(s).");
+    },
+    function (error) {
+      console.error("Firestore listener error:", error);
+      window.kumbhFirebaseReady = false;
+      try {
+        const msg = "Cloud sync error: " + (error.message || error);
+        console.error(msg);
+      } catch (e) {}
+    }
+  );
+
+  async function cloudAdd(data) {
     const payload = Object.assign({}, data, {
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     });
     delete payload.id;
-    return await withTimeout(applicationsRef.add(payload), 20000, 'Firebase database save');
+    const ref = await appsRef.add(payload);
+    return ref.id;
   }
 
-  async function updateCloudApplication(id, changes) {
-    await withTimeout(applicationsRef.doc(id).update(Object.assign({}, changes, {
+  async function cloudUpdate(id, changes) {
+    await appsRef.doc(id).update(Object.assign({}, changes, {
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    })), 20000, 'Firebase database update');
+    }));
   }
 
-  // Final override: submit application to Firebase Storage + Firestore.
-  window.submitVolunteerApplicationV5 = async function() {
-    if (!firebaseReady) return alert('Connecting to cloud database. Please wait a moment and try again.');
+  function blobFromDataURL(dataURL) {
+    const parts = String(dataURL).split(",");
+    const match = parts[0].match(/data:([^;]+);base64/);
+    const mime = match ? match[1] : "image/jpeg";
+    const raw = atob(parts[1] || "");
+    const bytes = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+    return new Blob([bytes], { type: mime });
+  }
 
-    const email = document.getElementById('v5Email')?.value.trim() || '';
-    const phone = document.getElementById('v5Phone')?.value.trim() || '';
-    const area = document.getElementById('v5Area')?.value.trim() || '';
-    const reason = document.getElementById('v5Reason')?.value.trim() || '';
-    const gov = document.getElementById('v5GovFile')?.files[0];
-    const govType = document.getElementById('v5GovType')?.value || '';
-    const role = document.getElementById('v5Role')?.value || 'Ground Volunteer';
-    const guideInterest = !!document.getElementById('v12GuideInterest')?.checked;
-    const guideExperience = document.getElementById('v12GuideExperience')?.value.trim() || '';
-    const selfieData = window.v5Selfie || v5Selfie || '';
+  async function uploadFile(fileOrBlob, path, contentType) {
+    const ref = storage.ref().child(path);
+    await ref.put(fileOrBlob, {
+      contentType: contentType || fileOrBlob.type || "application/octet-stream"
+    });
+    return await ref.getDownloadURL();
+  }
 
-    if (!currentUser) return alert('Please log in before submitting a volunteer application.');
-    if (!email || !phone || !area || !reason || !govType || !gov || !selfieData) {
-      return alert('Please complete every required field, upload a Government ID and capture a live selfie.');
+  /* ------------------------------------------------------------
+     SUBMIT - database first, then files in background
+     ------------------------------------------------------------ */
+  window.submitVolunteerApplicationV5 = async function () {
+    if (!window.kumbhFirebaseReady) {
+      alert("Cloud database is still connecting.\n\nPlease wait 2-3 seconds and tap Submit again.");
+      return;
     }
 
-    const submitButton = [...document.querySelectorAll('#v5Modal button')]
-      .find(b => b.textContent.includes('SUBMIT FOR ADMIN APPROVAL'));
-    if (submitButton) { submitButton.disabled = true; submitButton.textContent = 'UPLOADING...'; }
+    const email = document.getElementById("v5Email")?.value.trim() || "";
+    const phone = document.getElementById("v5Phone")?.value.trim() || "";
+    const area = document.getElementById("v5Area")?.value.trim() || "";
+    const reason = document.getElementById("v5Reason")?.value.trim() || "";
+    const gov = document.getElementById("v5GovFile")?.files?.[0] || null;
+    const govType = document.getElementById("v5GovType")?.value || "";
+    const role = document.getElementById("v5Role")?.value || "Ground Volunteer";
+    const guideInterest = !!document.getElementById("v12GuideInterest")?.checked;
+    const guideExperience = document.getElementById("v12GuideExperience")?.value.trim() || "";
+    const selfieData =
+      window.v5Selfie ||
+      (typeof v5Selfie !== "undefined" ? v5Selfie : "") ||
+      "";
+
+    if (!window.currentUser) {
+      alert("Please log in before submitting the volunteer application.");
+      return;
+    }
+
+    if (!email || !phone || !area || !reason || !govType || !gov || !selfieData) {
+      alert("Please complete every required field, upload a Government ID and capture a live selfie.");
+      return;
+    }
+
+    const button = Array.from(document.querySelectorAll("#v5Modal button"))
+      .find(function (b) {
+        return /SUBMIT FOR ADMIN APPROVAL|SUBMITTING|SAVING APPLICATION/.test(
+          b.textContent || ""
+        );
+      });
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "SAVING APPLICATION...";
+    }
 
     try {
-      // IMPORTANT: Do NOT put ID/selfie base64 inside Firestore.
-      // Firestore documents have a 1 MiB limit; files belong in Firebase Storage.
-      const safeUserId = String(currentUser.id).replace(/[^a-zA-Z0-9_-]/g, '_');
-      const stamp = Date.now();
-      const govPath = `volunteer-verification/${safeUserId}/${stamp}-government-id-${gov.name.replace(/[^a-zA-Z0-9._-]/g,'_')}`;
-      const selfieBlob = dataUrlToBlob(selfieData);
-      const selfiePath = `volunteer-verification/${safeUserId}/${stamp}-live-selfie.jpg`;
-
-      if (submitButton) submitButton.textContent = 'UPLOADING ID...';
-      const govUrl = await uploadVolunteerFile(gov, govPath, gov.type || 'application/octet-stream');
-      if (submitButton) submitButton.textContent = 'UPLOADING SELFIE...';
-      const selfieUrl = await uploadVolunteerFile(selfieBlob, selfiePath, 'image/jpeg');
-
-      if (submitButton) submitButton.textContent = 'SAVING...';
+      const user = window.currentUser;
       const app = {
-        userId: currentUser.id,
-        name: currentUser.name,
-        phone, email, area, role, reason,
-        govType,
+        userId: user.id || "",
+        name: user.name || "",
+        phone: phone,
+        email: email,
+        area: area,
+        role: role,
+        reason: reason,
+        govType: govType,
         govFileName: gov.name,
-        govUrl,
-        selfieUrl,
-        status: 'PENDING',
+        status: "PENDING",
+        verificationStatus: "UPLOADING",
         appliedAt: new Date().toLocaleString(),
         credentialsDelivered: false,
-        guideInterest,
-        guideExperience,
+        guideInterest: guideInterest,
+        guideExperience: guideExperience,
         guideApproved: false,
-        volunteerId: '',
-        tempId: '',
-        tempPassword: '',
+        volunteerId: "",
+        tempId: "",
+        tempPassword: "",
         firstLogin: false,
         mustChangePassword: false
       };
 
-      await createCloudApplication(app);
-      currentUser.email = email;
-      currentUser.phone = phone;
-      try { localStorage.setItem('kumbhCurrentUser', JSON.stringify(currentUser)); } catch(e) {}
-      if (typeof stopSelfieV5 === 'function') stopSelfieV5();
-      if (typeof closeV5Modal === 'function') closeV5Modal();
-      alert('Application submitted successfully. It is now synced to the Admin dashboard on your laptop and all other devices.');
+      /* The critical operation: wait only for the Firestore record. */
+      const appId = await cloudAdd(app);
+
+      user.email = email;
+      user.phone = phone;
+      try {
+        localStorage.setItem("kumbhCurrentUser", JSON.stringify(user));
+      } catch (e) {}
+
+      if (typeof stopSelfieV5 === "function") stopSelfieV5();
+      if (typeof closeV5Modal === "function") closeV5Modal();
+
+      alert(
+        "✓ APPLICATION SUBMITTED SUCCESSFULLY\n\n" +
+        "Application ID: " + appId +
+        "\n\nIt is now visible to Admin on all devices."
+      );
+
+      /* Upload verification files without blocking the application. */
+      (async function () {
+        try {
+          const safeUser =
+            String(user.id || "user").replace(/[^a-zA-Z0-9_-]/g, "_");
+          const stamp = Date.now();
+
+          const safeGovName = gov.name.replace(
+            /[^a-zA-Z0-9._-]/g,
+            "_"
+          );
+
+          const govPath =
+            "volunteer-verification/" + safeUser + "/" +
+            stamp + "-government-id-" + safeGovName;
+
+          const selfiePath =
+            "volunteer-verification/" + safeUser + "/" +
+            stamp + "-live-selfie.jpg";
+
+          const selfieBlob = blobFromDataURL(selfieData);
+
+          const results = await Promise.all([
+            uploadFile(gov, govPath, gov.type || "application/octet-stream"),
+            uploadFile(selfieBlob, selfiePath, "image/jpeg")
+          ]);
+
+          await cloudUpdate(appId, {
+            govUrl: results[0],
+            selfieUrl: results[1],
+            verificationStatus: "READY"
+          });
+        } catch (uploadError) {
+          console.error("Verification upload failed:", uploadError);
+          try {
+            await cloudUpdate(appId, {
+              verificationStatus: "UPLOAD_FAILED",
+              verificationError: String(uploadError.message || uploadError)
+            });
+          } catch (e) {}
+        }
+      })();
+
     } catch (error) {
-      console.error('Volunteer submission error:', error);
-      alert('Could not submit application: ' + (error?.message || error));
-      if (submitButton) { submitButton.disabled = false; submitButton.textContent = 'SUBMIT FOR ADMIN APPROVAL'; }
+      console.error("Application submit error:", error);
+      if (button) {
+        button.disabled = false;
+        button.textContent = "SUBMIT FOR ADMIN APPROVAL";
+      }
+      alert(
+        "❌ APPLICATION WAS NOT SUBMITTED\n\n" +
+        (error.message || String(error))
+      );
     }
   };
 
-  // REAL-TIME admin approval.
-  window.approveVolunteer = async function(id) {
-    const a = (volunteerApplications || []).find(x => x.id === id);
-    if (!a) return alert('Application not found.');
-    if (!confirm('Approve ' + (a.name || 'this volunteer') + ' and issue temporary credentials?')) return;
+  /* ------------------------------------------------------------
+     APPROVAL - unique function name prevents old prototype code
+     from intercepting the button click.
+     ------------------------------------------------------------ */
+  window.krApproveVolunteer = async function (id) {
+    const list = window.volunteerApplications || [];
+    const app = list.find(function (x) { return x.id === id; });
+
+    if (!app) {
+      alert("Application not found in the cloud database.");
+      return;
+    }
+
+    if (String(app.status).toUpperCase() !== "PENDING") {
+      alert("This application is already " + app.status + ".");
+      return;
+    }
+
+    if (!confirm(
+      "Approve " + (app.name || "this volunteer") +
+      " and issue a temporary Volunteer ID and password?"
+    )) return;
+
+    const volunteerId =
+      app.volunteerId ||
+      ("VOL" + Math.floor(100000 + Math.random() * 900000));
+
+    const tempPassword =
+      app.tempPassword ||
+      ("K" + Math.floor(1000 + Math.random() * 9000));
 
     try {
-      const volunteerId = a.volunteerId || ('VOL' + String(Math.floor(100000 + Math.random() * 899999)));
-      const tempPassword = a.tempPassword || ('K' + Math.floor(1000 + Math.random() * 8999));
-      await updateCloudApplication(id, {
-        status: 'APPROVED',
-        volunteerId,
+      /* Update the actual Firestore document using its document ID. */
+      await cloudUpdate(id, {
+        status: "APPROVED",
+        volunteerId: volunteerId,
         tempId: volunteerId,
-        tempPassword,
+        tempPassword: tempPassword,
         firstLogin: true,
         mustChangePassword: true,
         credentialsDelivered: true,
-        credentialsMessage: 'Approved on ' + new Date().toLocaleString() + '. Temporary credentials issued.'
+        credentialsMessage:
+          "Approved on " + new Date().toLocaleString() +
+          ". Temporary credentials issued."
       });
-      alert('Volunteer approved. The change is now synced to every device.');
-    } catch(error) {
-      alert('Approval failed: ' + error.message);
+
+      /* Update local view immediately too. */
+      const local = (window.volunteerApplications || []).find(function (x) {
+        return x.id === id;
+      });
+      if (local) {
+        Object.assign(local, {
+          status: "APPROVED",
+          volunteerId: volunteerId,
+          tempId: volunteerId,
+          tempPassword: tempPassword,
+          firstLogin: true,
+          mustChangePassword: true,
+          credentialsDelivered: true
+        });
+      }
+      refreshViews();
+
+      alert(
+        "✓ VOLUNTEER APPROVED\n\n" +
+        "Volunteer ID: " + volunteerId +
+        "\nTemporary Password: " + tempPassword +
+        "\n\nThe credentials are saved in Firebase and synced to all devices."
+      );
+    } catch (error) {
+      console.error("Approval error:", error);
+      alert(
+        "❌ APPROVAL FAILED\n\n" +
+        (error.message || String(error)) +
+        "\n\nCheck your Firestore rules."
+      );
     }
   };
 
-  window.rejectVolunteer = async function(id) {
-    const a = (volunteerApplications || []).find(x => x.id === id);
-    if (!a) return alert('Application not found.');
-    if (!confirm('Reject ' + (a.name || 'this application') + '?')) return;
-    try {
-      await updateCloudApplication(id, { status: 'REJECTED' });
-      alert('Application rejected and synced to all devices.');
-    } catch(error) { alert('Rejection failed: ' + error.message); }
-  };
+  window.krRejectVolunteer = async function (id) {
+    const app = (window.volunteerApplications || []).find(function (x) {
+      return x.id === id;
+    });
 
-  // Guide approval also syncs across devices.
-  window.toggleGuideApprovalV12 = async function(id) {
-    const a = (volunteerApplications || []).find(x => x.id === id);
-    if (!a) return;
-    try {
-      await updateCloudApplication(id, { guideApproved: !a.guideApproved });
-    } catch(error) { alert('Guide update failed: ' + error.message); }
-  };
+    if (!app) return alert("Application not found in Firebase.");
+    if (!confirm("Reject " + (app.name || "this application") + "?")) return;
 
-  // A volunteer can later request guide access from the synced database.
-  window.applyGuideAsVolunteerV12 = async function() {
-    const a = (volunteerApplications || []).find(x => x.id === volunteerSession?.appId);
-    if (!a) return alert('Volunteer session not found.');
-    const details = prompt('Enter your guide experience, languages and local knowledge:');
-    if (details === null) return;
     try {
-      await updateCloudApplication(a.id, {
-        guideInterest: true,
-        guideExperience: details.trim(),
-        guideRequestedAt: new Date().toLocaleString()
-      });
-      alert('Your guide request has been sent to Admin and synced.');
-      if (typeof showVolunteerHome === 'function') showVolunteerHome();
-    } catch(error) { alert('Guide request failed: ' + error.message); }
-  };
-
-  // Optional one-time migration button callable from browser console:
-  // migrateLocalVolunteerApplicationsToFirebase()
-  window.migrateLocalVolunteerApplicationsToFirebase = async function() {
-    const localApps = JSON.parse(localStorage.getItem('kumbhVolunteerApplications') || '[]');
-    if (!localApps.length) return alert('No local volunteer applications found on this device.');
-    let count = 0;
-    for (const app of localApps) {
-      const copy = Object.assign({}, app);
-      delete copy.id;
-      await createCloudApplication(copy);
-      count++;
+      await cloudUpdate(id, { status: "REJECTED" });
+      alert("✓ Application rejected and synced to all devices.");
+    } catch (error) {
+      alert("❌ Rejection failed: " + (error.message || error));
     }
-    alert(count + ' local application(s) migrated to Firebase.');
   };
 
-  console.log('Kumbh Rakshak Firebase volunteer sync is active.');
+  /* ------------------------------------------------------------
+     ADMIN RENDER - always uses the unique cloud handlers.
+     This prevents old approveVolunteer() functions from firing.
+     ------------------------------------------------------------ */
+  window.renderVolunteerApplicationsAdmin = function () {
+    const el = document.getElementById("volunteerApplicationsAdmin");
+    if (!el) return;
+
+    const list = window.volunteerApplications || [];
+
+    if (!list.length) {
+      el.innerHTML =
+        "<p>No volunteer applications yet.</p>" +
+        (window.kumbhFirebaseReady
+          ? ""
+          : "<p><b>Connecting to Firebase...</b></p>");
+      return;
+    }
+
+    el.innerHTML = list.map(function (a) {
+      const status = String(a.status || "PENDING").toUpperCase();
+
+      let action = "";
+
+      if (status === "PENDING") {
+        action =
+          '<div class="grid">' +
+          '<button class="green" type="button" ' +
+          'onclick="window.krApproveVolunteer(' +
+          JSON.stringify(a.id) + ')">' +
+          "APPROVE & ISSUE TEMP ID</button>" +
+          '<button class="red" type="button" ' +
+          'onclick="window.krRejectVolunteer(' +
+          JSON.stringify(a.id) + ')">' +
+          "REJECT</button></div>";
+      } else if (status === "APPROVED") {
+        action =
+          "<p><b>Volunteer ID:</b> " +
+          (a.volunteerId || a.tempId || "Not generated") +
+          "<br><b>Temporary password:</b> " +
+          (a.tempPassword || "Not generated") +
+          "</p>";
+      } else if (status === "REJECTED") {
+        action = "<p><b>Application rejected.</b></p>";
+      }
+
+      return (
+        '<div class="application">' +
+        "<b>" + (a.name || "Volunteer") + "</b> " +
+        '<span class="status-' + status + '">' + status + "</span><br>" +
+        "📞 " + (a.phone || "") + "<br>" +
+        "📧 " + (a.email || "") + "<br>" +
+        "📍 " + (a.area || "") + "<br>" +
+        "Role: " + (a.role || "") + "<br>" +
+        "<small>" + (a.reason || "") + "</small>" +
+        (a.guideInterest
+          ? '<p><b>GUIDE INTEREST</b><br>' +
+            "Guide details: " + (a.guideExperience || "Not provided") +
+            "</p>"
+          : "") +
+        "<p><b>Verification:</b> " +
+        (a.verificationStatus || "PENDING") + "</p>" +
+        action +
+        "</div>"
+      );
+    }).join("");
+  };
+
+  /* Keep the existing admin dashboard's call working. */
+  try {
+    if (typeof renderOwnerDashboard === "function") {
+      const originalOwnerDashboard = renderOwnerDashboard;
+      window.renderOwnerDashboard = function () {
+        originalOwnerDashboard();
+        setTimeout(window.renderVolunteerApplicationsAdmin, 50);
+      };
+    }
+  } catch (e) {}
+
+  console.log("Kumbh Rakshak: single Firebase volunteer sync active.");
 })();
 </script>
 <!-- END FIREBASE REAL-TIME VOLUNTEER SYNC -->
