@@ -1196,6 +1196,9 @@ const firebaseConfig = {
         return tb - ta;
       });
 
+      if (typeof volunteerApplications !== "undefined") {
+        volunteerApplications = list;
+      }
       window.volunteerApplications = list;
       window.kumbhFirebaseReady = true;
       refreshViews();
@@ -1268,7 +1271,9 @@ const firebaseConfig = {
       (typeof v5Selfie !== "undefined" ? v5Selfie : "") ||
       "";
 
-    if (!window.currentUser) {
+    const loggedInUser = (typeof currentUser !== "undefined") ? currentUser : window.currentUser;
+
+    if (!loggedInUser) {
       alert("Please log in before submitting the volunteer application.");
       return;
     }
@@ -1291,7 +1296,7 @@ const firebaseConfig = {
     }
 
     try {
-      const user = window.currentUser;
+      const user = loggedInUser;
       const app = {
         userId: user.id || "",
         name: user.name || "",
@@ -1395,7 +1400,7 @@ const firebaseConfig = {
      from intercepting the button click.
      ------------------------------------------------------------ */
   window.krApproveVolunteer = async function (id) {
-    const list = window.volunteerApplications || [];
+    const list = (typeof volunteerApplications !== "undefined") ? volunteerApplications : (window.volunteerApplications || []);
     const app = list.find(function (x) { return x.id === id; });
 
     if (!app) {
@@ -1437,7 +1442,8 @@ const firebaseConfig = {
       });
 
       /* Update local view immediately too. */
-      const local = (window.volunteerApplications || []).find(function (x) {
+      const approvalList = (typeof volunteerApplications !== "undefined") ? volunteerApplications : (window.volunteerApplications || []);
+      const local = approvalList.find(function (x) {
         return x.id === id;
       });
       if (local) {
@@ -1493,7 +1499,7 @@ const firebaseConfig = {
     const el = document.getElementById("volunteerApplicationsAdmin");
     if (!el) return;
 
-    const list = window.volunteerApplications || [];
+    const list = (typeof volunteerApplications !== "undefined") ? volunteerApplications : (window.volunteerApplications || []);
 
     if (!list.length) {
       el.innerHTML =
