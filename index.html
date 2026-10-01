@@ -13090,3 +13090,826 @@ html.kr-force-mobile #publicPage .kr-nearby-bus-row > .kr-ref-bus{
   };
 })();
 </script>
+
+<!-- SAFETY BAND POSITION RESTORE: keep the new functional Safety Band card in its original dashboard position -->
+<style id="kr-safety-band-old-position">
+#publicPage #krNewSafety{
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+</style>
+<script id="kr-safety-band-old-position-js">
+(function(){
+  'use strict';
+  function restoreSafetyPosition(){
+    const page=document.getElementById('publicPage');
+    const grid=page?.querySelector('.public-dashboard-grid');
+    const safety=document.getElementById('krNewSafety');
+    if(!grid||!safety)return;
+
+    // The original Safety Band card contains #safetyRegistration.
+    // Put the new functional card exactly where that old card used to be.
+    const old=[...grid.children].find(el=>
+      el!==safety && el.querySelector?.('#safetyRegistration')
+    );
+    if(old && old.parentElement===grid){
+      old.parentElement.insertBefore(safety,old);
+      old.style.display='none';
+    }
+  }
+  function boot(){
+    restoreSafetyPosition();
+    [150,500,1000,1800,3000].forEach(t=>setTimeout(restoreSafetyPosition,t));
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
+})();
+</script>
+
+<!-- SAFETY BAND MOBILE UX POLISH -->
+<style id="kr-safety-band-mobile-ux">
+#publicPage #krNewSafety,
+#publicPage #krNewSafety .kr-ref-new-inner,
+#publicPage #krNewSafety #krSafetyHost{
+  min-width:0!important;
+  max-width:100%!important;
+  box-sizing:border-box!important;
+}
+#publicPage #krNewSafety,
+#publicPage #krNewSafety .kr-ref-new-inner{
+  overflow:visible!important;
+}
+#publicPage #krNewSafety #krSafetyHost{
+  margin-top:14px!important;
+  overflow:visible!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-final-panel{
+  width:100%!important;
+  max-width:100%!important;
+  padding:15px!important;
+  margin:0!important;
+  border-radius:18px!important;
+  background:rgba(255,255,255,.96)!important;
+  border:1px solid rgba(224,230,238,.95)!important;
+  box-shadow:0 10px 24px rgba(39,57,86,.08)!important;
+  box-sizing:border-box!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-final-panel h3{
+  font-size:17px!important;
+  line-height:1.25!important;
+  margin:0 0 8px!important;
+  color:#102a54!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-final-panel p{
+  font-size:12px!important;
+  line-height:1.5!important;
+  color:#667995!important;
+  margin:0 0 12px!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-form-grid{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:10px!important;
+  width:100%!important;
+  margin:12px 0!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-field{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:5px!important;
+  min-width:0!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-field label{
+  font-size:10px!important;
+  font-weight:800!important;
+  color:#526b8a!important;
+  padding-left:3px!important;
+}
+#publicPage #krNewSafety #krSafetyHost select,
+#publicPage #krNewSafety #krSafetyHost input{
+  width:100%!important;
+  min-width:0!important;
+  min-height:48px!important;
+  height:48px!important;
+  margin:0!important;
+  padding:0 13px!important;
+  border-radius:13px!important;
+  border:1px solid #d8e1ec!important;
+  background:#fbfdff!important;
+  color:#1b3354!important;
+  font-size:14px!important;
+  outline:none!important;
+  box-sizing:border-box!important;
+  -webkit-appearance:none!important;
+}
+#publicPage #krNewSafety #krSafetyHost select:focus,
+#publicPage #krNewSafety #krSafetyHost input:focus{
+  border-color:#ff8b2b!important;
+  box-shadow:0 0 0 3px rgba(255,123,24,.12)!important;
+  background:#fff!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-submit{
+  width:100%!important;
+  min-height:50px!important;
+  height:50px!important;
+  margin:4px 0 0!important;
+  border:0!important;
+  border-radius:14px!important;
+  background:linear-gradient(100deg,#ff6e15,#ff8e1e)!important;
+  color:#fff!important;
+  font-size:13px!important;
+  font-weight:850!important;
+  box-shadow:0 10px 22px rgba(255,112,20,.22)!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-submit:active,
+#publicPage #krNewSafety #krSafetyHost button:active{
+  transform:scale(.985)!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-section-title{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  margin:18px 0 9px!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-section-title strong{
+  font-size:13px!important;
+  color:#19365c!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-count{
+  min-width:24px!important;
+  height:24px!important;
+  padding:0 7px!important;
+  border-radius:999px!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  background:#fff1e5!important;
+  color:#ed6b16!important;
+  font-size:10px!important;
+  font-weight:850!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-final-list{
+  display:grid!important;
+  gap:10px!important;
+  margin:0!important;
+  width:100%!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-final-item{
+  width:100%!important;
+  padding:13px!important;
+  border:1px solid #e0e7ef!important;
+  border-radius:15px!important;
+  background:linear-gradient(180deg,#fff,#fbfdff)!important;
+  box-shadow:0 6px 15px rgba(39,57,86,.055)!important;
+  box-sizing:border-box!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-band-main{
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:10px!important;
+  min-width:0!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-band-avatar{
+  width:42px!important;
+  height:42px!important;
+  flex:0 0 42px!important;
+  display:grid!important;
+  place-items:center!important;
+  border-radius:13px!important;
+  background:linear-gradient(145deg,#fff0df,#ffe0bd)!important;
+  font-size:20px!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-band-info{
+  min-width:0!important;
+  flex:1 1 auto!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-band-name{
+  display:block!important;
+  font-size:14px!important;
+  font-weight:850!important;
+  color:#132f53!important;
+  overflow-wrap:anywhere!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-band-meta{
+  display:block!important;
+  margin-top:4px!important;
+  font-size:10px!important;
+  line-height:1.45!important;
+  color:#60748e!important;
+  overflow-wrap:anywhere!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-id{
+  color:#365777!important;
+  font-weight:800!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-band-actions{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:8px!important;
+  margin-top:11px!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-band-actions button,
+#publicPage #krNewSafety #krSafetyHost .kr-qr-actions button{
+  width:100%!important;
+  min-height:43px!important;
+  height:43px!important;
+  margin:0!important;
+  border:0!important;
+  border-radius:12px!important;
+  font-size:11px!important;
+  font-weight:850!important;
+  box-sizing:border-box!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-view-qr{
+  background:#1677e8!important;
+  color:#fff!important;
+  box-shadow:0 7px 16px rgba(22,119,232,.18)!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-share{
+  background:#e9f9f0!important;
+  color:#087d49!important;
+  border:1px solid #cbeedb!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-final-qr-panel{
+  margin-top:12px!important;
+  scroll-margin-top:20px!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-qr-head{
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-close{
+  width:34px!important;
+  min-width:34px!important;
+  height:34px!important;
+  min-height:34px!important;
+  padding:0!important;
+  margin:0!important;
+  border:1px solid #e0e6ee!important;
+  border-radius:10px!important;
+  background:#f6f8fb!important;
+  color:#52657f!important;
+  font-size:16px!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-qr-info{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+  margin-top:10px!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-qr-info div{
+  padding:8px 9px!important;
+  border-radius:10px!important;
+  background:#f7faff!important;
+  border:1px solid #e6edf5!important;
+  min-width:0!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-qr-info small{
+  display:block!important;
+  font-size:8px!important;
+  color:#7587a0!important;
+  margin-bottom:2px!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-qr-info b{
+  display:block!important;
+  font-size:10px!important;
+  color:#19375d!important;
+  overflow-wrap:anywhere!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-final-qr{
+  width:100%!important;
+  min-height:0!important;
+  margin:12px auto!important;
+  padding:12px!important;
+  display:flex!important;
+  justify-content:center!important;
+  align-items:center!important;
+  background:#fff!important;
+  border:1px solid #e5eaf0!important;
+  border-radius:16px!important;
+  box-sizing:border-box!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-safety-final-qr canvas,
+#publicPage #krNewSafety #krSafetyHost .kr-safety-final-qr img{
+  width:min(220px,100%)!important;
+  height:auto!important;
+  aspect-ratio:1/1!important;
+  display:block!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-qr-actions{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:8px!important;
+  margin-top:8px!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-qr-share{
+  background:#0ba562!important;color:#fff!important;
+  box-shadow:0 8px 17px rgba(11,165,98,.18)!important;
+}
+#publicPage #krNewSafety #krSafetyHost .kr-qr-close{
+  background:#f0f4f8!important;color:#31506f!important;
+}
+@media (max-width:390px){
+  #publicPage #krNewSafety .kr-ref-new-inner{padding:14px!important}
+  #publicPage #krNewSafety #krSafetyHost .kr-safety-final-panel{padding:12px!important}
+  #publicPage #krNewSafety #krSafetyHost .kr-safety-band-actions{grid-template-columns:1fr!important}
+  #publicPage #krNewSafety #krSafetyHost .kr-safety-final-qr canvas,
+  #publicPage #krNewSafety #krSafetyHost .kr-safety-final-qr img{width:190px!important}
+}
+</style>
+<script id="kr-safety-band-mobile-ux-js">
+(function(){
+  'use strict';
+  const KEY='kumbhSafetyBands';
+  function host(){return document.getElementById('krSafetyHost')||document.getElementById('safetyRegistration');}
+  function user(){
+    try{if(typeof currentUser!=='undefined'&&currentUser)return currentUser;}catch(e){}
+    try{return JSON.parse(localStorage.getItem('kumbhCurrentUser')||'null');}catch(e){return null;}
+  }
+  function bands(){try{const x=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(x)?x:[]}catch(e){return[]}}
+  function save(a){localStorage.setItem(KEY,JSON.stringify(a));}
+  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function loc(){
+    try{if(typeof userLatitude!=='undefined'&&typeof userLongitude!=='undefined'&&userLatitude!=null&&userLongitude!=null)return {lat:Number(userLatitude),lon:Number(userLongitude)}}catch(e){}
+    return null;
+  }
+  function scrollToHost(){setTimeout(()=>host()?.scrollIntoView({behavior:'smooth',block:'nearest'}),80);}
+  function renderList(h,u){
+    const el=h.querySelector('#krSafetyFinalList');if(!el)return;
+    const a=bands().filter(x=>x.ownerId===u.id);
+    const title=`<div class="kr-safety-section-title"><strong>My Safety Bands</strong><span class="kr-safety-count">${a.length}</span></div>`;
+    const empty='<div class="result info" style="margin:0">No Safety Band registered yet. Add one above.</div>';
+    const cards=a.map(x=>`<div class="kr-safety-final-item">
+      <div class="kr-safety-band-main">
+        <div class="kr-safety-band-avatar">🛡️</div>
+        <div class="kr-safety-band-info">
+          <span class="kr-safety-band-name">${esc(x.name)}</span>
+          <span class="kr-safety-band-meta">${esc(x.category)}${x.relation?` • ${esc(x.relation)}`:''}<br>Safety ID: <span class="kr-safety-id">${esc(x.id)}</span>${x.phone?`<br>📞 ${esc(x.phone)}`:''}</span>
+        </div>
+      </div>
+      <div class="kr-safety-band-actions">
+        <button class="kr-safety-view-qr" type="button" onclick="krShowSafetyBandQR('${esc(x.id)}')">▣ &nbsp; VIEW QR</button>
+        <button class="kr-safety-share" type="button" onclick="krShareSafetyBand('${esc(x.id)}')">↗ &nbsp; SHARE</button>
+      </div>
+    </div>`).join('');
+    el.innerHTML=title+(a.length?cards:empty);
+  }
+  function makeQR(box,b){
+    if(!box)return;
+    box.innerHTML='';
+    const payload=JSON.stringify({type:'KUMBH_RAKSHAK_SAFETY_BAND',id:b.id,ownerId:b.ownerId,ownerName:b.ownerName,name:b.name,category:b.category,phone:b.phone||'',relation:b.relation||'',lat:b.location?.lat??null,lon:b.location?.lon??null});
+    localStorage.setItem('kumbhV13SafetyPayload',payload);
+    if(typeof QRCode!=='function'){box.innerHTML='<div class="result warning">QR generator is unavailable. Refresh the page and try again.</div>';return;}
+    try{new QRCode(box,{text:payload,width:220,height:220});}catch(e){box.innerHTML='<div class="result danger">QR generation failed. Please refresh and try again.</div>';}
+  }
+  window.krShowSafetyBandQR=function(id){
+    const u=user(),h=host();if(!u||!h)return;
+    const b=bands().find(x=>x.id===id&&x.ownerId===u.id);if(!b)return alert('Safety Band not found.');
+    const old=h.querySelector('.kr-safety-final-qr-panel');if(old)old.remove();
+    const p=document.createElement('div');p.className='kr-safety-final-panel kr-safety-final-qr-panel';
+    p.innerHTML=`<div class="kr-safety-qr-head"><div><h3>📱 Safety Band QR</h3><p style="margin-bottom:0"><b>${esc(b.name)}</b> • ${esc(b.category)}</p></div><button class="kr-safety-close" type="button" aria-label="Close QR" onclick="this.closest('.kr-safety-final-qr-panel').remove()">×</button></div>
+      <div class="kr-safety-qr-info"><div><small>SAFETY ID</small><b>${esc(b.id)}</b></div><div><small>CONTACT</small><b>${esc(b.phone||'Not available')}</b></div></div>
+      <div id="krSafetyFinalQR" class="kr-safety-final-qr"></div>
+      <div class="kr-qr-actions"><button class="kr-qr-share" type="button" onclick="krShareSafetyBand('${esc(b.id)}')">📤 SHARE SAFETY PROFILE</button><button class="kr-qr-close" type="button" onclick="this.closest('.kr-safety-final-qr-panel').remove()">DONE</button></div>`;
+    h.appendChild(p);makeQR(p.querySelector('#krSafetyFinalQR'),b);
+    setTimeout(()=>p.scrollIntoView({behavior:'smooth',block:'nearest'}),60);
+  };
+  window.krShareSafetyBand=function(id){
+    const u=user(),b=bands().find(x=>x.id===id&&x.ownerId===u?.id);if(!b)return alert('Safety Band not found.');
+    const location=b.location?.lat!=null?`https://www.google.com/maps?q=${b.location.lat},${b.location.lon}`:'Location unavailable';
+    const text=`🛡️ Kumbh Rakshak Safety Band\nName: ${b.name}\nCategory: ${b.category}\nSafety ID: ${b.id}\nContact: ${b.phone||'Not available'}\nLocation: ${location}`;
+    if(navigator.share){navigator.share({title:'Kumbh Rakshak Safety Band',text}).catch(()=>{});}
+    else if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>alert('Safety Band details copied.')).catch(()=>alert(text));}
+    else alert(text);
+  };
+  window.showSafetyRegistration=function(){
+    const h=host();if(!h){alert('Safety Band panel is not available. Please refresh the page.');return;}
+    h.style.display='block';h.style.visibility='visible';h.style.width='100%';
+    const u=user();
+    if(!u){h.innerHTML='<div class="kr-safety-final-panel"><h3>🔒 Login Required</h3><p>Login or create an account to register and manage Safety Bands.</p><button class="blue" type="button" style="width:100%;min-height:48px;border-radius:13px" onclick="openPage(\'userLoginPage\')">👤 LOGIN / CREATE ACCOUNT</button></div>';scrollToHost();return;}
+    h.innerHTML=`<div class="kr-safety-final-panel">
+      <h3>🛡️ Register a Safety Band</h3>
+      <p>Add a child or elderly family member. Their Safety ID and QR can be shown or shared anytime.</p>
+      <div class="kr-safety-form-grid">
+        <div class="kr-safety-field"><label>PERSON TYPE</label><select id="krSafetyFinalCategory"><option value="Child">👶 Child</option><option value="Elderly">👴 Elderly</option></select></div>
+        <div class="kr-safety-field"><label>NAME</label><input id="krSafetyFinalName" placeholder="Child / elderly person's name" autocomplete="name"></div>
+        <div class="kr-safety-field"><label>CONTACT PHONE</label><input id="krSafetyFinalPhone" type="tel" inputmode="tel" placeholder="Emergency / contact phone" autocomplete="tel"></div>
+        <div class="kr-safety-field"><label>RELATION</label><input id="krSafetyFinalRelation" placeholder="Parent, Son, Daughter, etc."></div>
+      </div>
+      <button class="kr-safety-submit" type="button" onclick="krRegisterSafetyBand()">🛡️ &nbsp; REGISTER SAFETY BAND</button>
+      <div id="krSafetyFinalList" class="kr-safety-final-list"></div>
+    </div>`;
+    renderList(h,u);scrollToHost();
+  };
+  window.krRegisterSafetyBand=function(){
+    const u=user(),h=host();if(!u){window.showSafetyRegistration();return;}
+    const name=(document.getElementById('krSafetyFinalName')?.value||'').trim();
+    const phone=(document.getElementById('krSafetyFinalPhone')?.value||'').trim();
+    const category=document.getElementById('krSafetyFinalCategory')?.value||'Child';
+    const relation=(document.getElementById('krSafetyFinalRelation')?.value||'').trim();
+    if(!name)return alert('Please enter the child / elderly person\'s name.');
+    if(!phone)return alert('Please enter a contact phone number.');
+    const b={id:'SB-'+Date.now().toString(36).toUpperCase(),ownerId:u.id,ownerName:u.name||'',name,phone,category,relation,location:loc(),createdAt:new Date().toISOString()};
+    const a=bands();a.push(b);save(a);
+    h.innerHTML=`<div class="kr-safety-final-panel"><div class="result success"><b>✓ Safety Band registered successfully.</b><br>${esc(b.name)} • ${esc(b.category)}<br>Safety ID: <b>${esc(b.id)}</b></div><div class="kr-safety-section-title"><strong>Safety Band QR</strong></div><div id="krSafetyFinalQR" class="kr-safety-final-qr"></div><div class="kr-qr-actions"><button class="kr-qr-share" type="button" onclick="krShareSafetyBand('${esc(b.id)}')">📤 SHARE SAFETY PROFILE</button><button class="kr-qr-close" type="button" onclick="showSafetyRegistration()">← VIEW MY SAFETY BANDS</button></div></div>`;
+    makeQR(h.querySelector('#krSafetyFinalQR'),b);scrollToHost();
+  };
+})();
+</script>
+
+<!-- FINAL SAFETY BAND CARD POSITION + SHAPE REPAIR -->
+<style id="kr-safety-band-card-final-repair">
+#publicPage .public-dashboard-grid > .kr-new-feature-row{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  gap:16px!important;
+  align-items:stretch!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+#publicPage .kr-new-feature-row > #krNewSafety{
+  position:relative!important;
+  display:block!important;
+  grid-column:auto!important;
+  grid-row:auto!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:310px!important;
+  min-height:310px!important;
+  margin:0!important;
+  padding:0!important;
+  visibility:visible!important;
+  opacity:1!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+  z-index:3!important;
+}
+#publicPage .kr-new-feature-row > #krNewSafety .kr-ref-new-inner{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:310px!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
+#publicPage #krNewSafety .kr-ref-head{
+  min-width:0!important;
+}
+#publicPage #krNewSafety .kr-ref-head > div:nth-child(2){
+  min-width:0!important;
+  flex:1 1 auto!important;
+}
+#publicPage #krNewSafety .kr-safety-list{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+#publicPage #krNewSafety .kr-safety-row{
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+#publicPage #krNewSafety .kr-safety-action{
+  position:relative!important;
+  z-index:5!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  white-space:normal!important;
+}
+#publicPage #krNewSafety #krSafetyHost{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+@media(max-width:900px){
+  #publicPage .kr-new-feature-row{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  #publicPage .kr-new-feature-row > #krNewCrowdReports{
+    grid-column:1/-1!important;
+  }
+  #publicPage .kr-new-feature-row > #krNewQR,
+  #publicPage .kr-new-feature-row > #krNewSafety{
+    grid-column:auto!important;
+  }
+}
+@media(max-width:760px){
+  #publicPage .kr-new-feature-row,
+  html.kr-force-mobile #publicPage .kr-new-feature-row{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:14px!important;
+  }
+  #publicPage .kr-new-feature-row > #krNewCrowdReports,
+  #publicPage .kr-new-feature-row > #krNewQR,
+  #publicPage .kr-new-feature-row > #krNewSafety,
+  html.kr-force-mobile #publicPage .kr-new-feature-row > #krNewCrowdReports,
+  html.kr-force-mobile #publicPage .kr-new-feature-row > #krNewQR,
+  html.kr-force-mobile #publicPage .kr-new-feature-row > #krNewSafety{
+    grid-column:1/-1!important;
+    width:100%!important;
+    max-width:none!important;
+    min-width:0!important;
+  }
+  #publicPage .kr-new-feature-row > #krNewSafety,
+  html.kr-force-mobile #publicPage .kr-new-feature-row > #krNewSafety{
+    height:auto!important;
+    min-height:300px!important;
+  }
+  #publicPage .kr-new-feature-row > #krNewSafety .kr-ref-new-inner,
+  html.kr-force-mobile #publicPage .kr-new-feature-row > #krNewSafety .kr-ref-new-inner{
+    height:auto!important;
+    min-height:300px!important;
+  }
+}
+</style>
+<script id="kr-safety-band-card-final-repair-js">
+(function(){
+  'use strict';
+  function repair(){
+    const page=document.getElementById('publicPage');
+    const grid=page?.querySelector('.public-dashboard-grid');
+    const feature=grid?.querySelector(':scope > .kr-new-feature-row');
+    const safety=document.getElementById('krNewSafety');
+    if(!grid||!feature||!safety)return;
+
+    /* The previous position-restoration patch accidentally moved the
+       functional Safety Band card OUT of its 3-card feature row. Put it
+       back beside Crowd Reports and QR, where the dashboard layout expects it. */
+    if(safety.parentElement!==feature){
+      const crowd=feature.querySelector('#krNewCrowdReports');
+      const qr=feature.querySelector('#krNewQR');
+      if(qr) feature.insertBefore(safety,qr.nextSibling);
+      else if(crowd) feature.appendChild(safety);
+      else feature.appendChild(safety);
+    }
+
+    const old=[...grid.children].find(el=>el!==safety && el!==feature && el.querySelector?.('#safetyRegistration'));
+    if(old){
+      old.style.setProperty('display','none','important');
+      old.setAttribute('aria-hidden','true');
+    }
+
+    feature.style.setProperty('display','grid','important');
+    feature.style.setProperty('width','100%','important');
+    feature.style.setProperty('max-width','none','important');
+    feature.style.setProperty('min-width','0','important');
+    feature.style.setProperty('box-sizing','border-box','important');
+
+    safety.style.setProperty('display','block','important');
+    safety.style.setProperty('width','100%','important');
+    safety.style.setProperty('max-width','none','important');
+    safety.style.setProperty('min-width','0','important');
+    safety.style.setProperty('grid-column','auto','important');
+    safety.style.setProperty('box-sizing','border-box','important');
+    safety.style.setProperty('visibility','visible','important');
+    safety.style.setProperty('opacity','1','important');
+  }
+  function boot(){
+    repair();
+    [50,150,400,900,1800,3000].forEach(t=>setTimeout(repair,t));
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
+  new MutationObserver(()=>setTimeout(repair,30)).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
+<!-- ============================================================
+     FINAL SOS + VOLUNTEER CARD REPAIR
+     Keeps both cards in one full-width dashboard row and prevents
+     older layout scripts from squeezing the row into a narrow column.
+     ============================================================ -->
+<style id="kr-final-sos-volunteer-layout">
+#publicPage .public-dashboard-grid > .kr-new-bottom-row{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:18px!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
+
+#publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-emergency-fixed,
+#publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-volunteer-fixed{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  grid-column:auto!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  height:auto!important;
+  min-height:360px!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+  position:relative!important;
+}
+
+#publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-emergency-fixed .kr-ref-new-inner,
+#publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-volunteer-fixed .kr-ref-new-inner{
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:360px!important;
+  height:auto!important;
+  box-sizing:border-box!important;
+  padding:22px!important;
+  overflow:hidden!important;
+}
+
+/* Never allow the headings to become vertically written when a card is
+   temporarily squeezed by an older grid rule. */
+#publicPage .kr-new-bottom-row .kr-ref-head,
+#publicPage .kr-new-bottom-row .kr-ref-head > div,
+#publicPage .kr-new-bottom-row .kr-ref-head h2,
+#publicPage .kr-new-bottom-row .kr-ref-head p{
+  min-width:0!important;
+  max-width:100%!important;
+  width:auto!important;
+  writing-mode:horizontal-tb!important;
+  text-orientation:mixed!important;
+  word-break:normal!important;
+  overflow-wrap:anywhere!important;
+}
+
+#publicPage .kr-new-bottom-row .kr-ref-head > div:nth-child(2){
+  flex:1 1 auto!important;
+}
+
+#publicPage .kr-new-bottom-row .kr-contact-list,
+#publicPage .kr-new-bottom-row .kr-vol-list,
+#publicPage .kr-new-bottom-row .kr-bottom-actions{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+
+#publicPage .kr-new-bottom-row .kr-bottom-actions{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+  margin-top:auto!important;
+}
+
+#publicPage .kr-new-bottom-row .kr-bottom-actions button{
+  width:100%!important;
+  min-width:0!important;
+  min-height:48px!important;
+  box-sizing:border-box!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+
+#publicPage .kr-new-bottom-row .kr-volunteer-fixed .kr-safety-action{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  min-height:48px!important;
+  margin-top:auto!important;
+  box-sizing:border-box!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+
+@media(max-width:900px){
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:14px!important;
+  }
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-emergency-fixed,
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-volunteer-fixed{
+    min-height:330px!important;
+  }
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-emergency-fixed .kr-ref-new-inner,
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-volunteer-fixed .kr-ref-new-inner{
+    min-height:330px!important;
+  }
+}
+
+@media(max-width:520px){
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+  }
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-emergency-fixed,
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-volunteer-fixed{
+    min-height:0!important;
+  }
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-emergency-fixed .kr-ref-new-inner,
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row > .kr-volunteer-fixed .kr-ref-new-inner{
+    min-height:0!important;
+    padding:18px!important;
+  }
+  #publicPage .kr-new-bottom-row .kr-bottom-actions{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+}
+</style>
+<script id="kr-final-sos-volunteer-layout-js">
+(function(){
+  'use strict';
+  function repair(){
+    const page=document.getElementById('publicPage');
+    const grid=page?.querySelector('.public-dashboard-grid');
+    if(!grid)return;
+
+    const emergency=document.getElementById('emergencyContactsCard');
+    const volunteer=document.getElementById('volunteerApplyPublic');
+    if(!emergency && !volunteer)return;
+
+    /* Find the one canonical bottom row. If an older script left a row
+       nested somewhere else, promote it to a direct child of the dashboard. */
+    let rows=[...grid.querySelectorAll('.kr-new-bottom-row')];
+    let row=rows.find(r=>r.contains(emergency)||r.contains(volunteer));
+    if(!row)row=rows[0]||document.createElement('div');
+
+    if(!row.classList.contains('kr-new-bottom-row'))row.classList.add('kr-new-bottom-row');
+    if(row.parentElement!==grid)grid.appendChild(row);
+
+    /* Put the cards themselves directly inside the canonical row. */
+    if(emergency){
+      emergency.classList.add('kr-ref-new-card','kr-emergency-fixed');
+      if(emergency.parentElement!==row)row.appendChild(emergency);
+      emergency.style.setProperty('display','block','important');
+      emergency.style.setProperty('width','100%','important');
+      emergency.style.setProperty('min-width','0','important');
+      emergency.style.setProperty('max-width','none','important');
+      emergency.style.setProperty('grid-column','auto','important');
+      emergency.style.setProperty('box-sizing','border-box','important');
+    }
+    if(volunteer){
+      volunteer.classList.add('kr-ref-new-card','kr-volunteer-fixed');
+      if(volunteer.parentElement!==row)row.appendChild(volunteer);
+      volunteer.style.setProperty('display','block','important');
+      volunteer.style.setProperty('width','100%','important');
+      volunteer.style.setProperty('min-width','0','important');
+      volunteer.style.setProperty('max-width','none','important');
+      volunteer.style.setProperty('grid-column','auto','important');
+      volunteer.style.setProperty('box-sizing','border-box','important');
+    }
+
+    /* Move the row to the end of the dashboard so it cannot be trapped
+       inside a narrow feature/card column. */
+    if(row.parentElement===grid)grid.appendChild(row);
+
+    row.style.setProperty('display','grid','important');
+    row.style.setProperty('grid-column','1 / -1','important');
+    row.style.setProperty('grid-template-columns','minmax(0,1fr) minmax(0,1fr)','important');
+    row.style.setProperty('width','100%','important');
+    row.style.setProperty('max-width','none','important');
+    row.style.setProperty('min-width','0','important');
+    row.style.setProperty('box-sizing','border-box','important');
+    row.style.setProperty('gap','18px','important');
+
+    if(document.documentElement.classList.contains('kr-force-mobile')){
+      row.style.setProperty('grid-template-columns','minmax(0,1fr)','important');
+    }else if(window.innerWidth<=900){
+      row.style.setProperty('grid-template-columns','minmax(0,1fr)','important');
+    }
+
+    /* Remove empty duplicate wrappers only; never remove a wrapper that
+       contains either functional card. */
+    rows.forEach(other=>{
+      if(other!==row && !other.contains(emergency) && !other.contains(volunteer) && !other.children.length){
+        other.remove();
+      }
+    });
+  }
+
+  function boot(){
+    repair();
+    [80,250,700,1400,2500,4000].forEach(t=>setTimeout(repair,t));
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});
+  else boot();
+
+  let timer=0;
+  new MutationObserver(()=>{
+    clearTimeout(timer);
+    timer=setTimeout(repair,80);
+  }).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
