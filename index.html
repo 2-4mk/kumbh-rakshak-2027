@@ -851,7 +851,7 @@ body:has(#publicPage.active) .container{padding-top:8px!important}
 #publicPage .station{padding:9px!important;margin-top:7px!important;border-radius:10px!important}#publicPage .slots{gap:5px!important}.slot{padding:8px 3px!important;font-size:9px!important}
 #publicPage .grid{gap:7px!important}#publicPage .grid button{min-height:52px!important}
 #publicPage .dashboard-kpis{gap:8px!important;margin-top:12px!important}.dashboard-kpi{padding:9px!important;border-radius:10px!important}.dashboard-kpi b{font-size:15px!important}.dashboard-kpi span,.dashboard-kpi i{font-size:9px!important}
-#publicPage .public-account-card{display:none!important}
+#publicPage .public-account-card{display:block!important}
 @media(max-width:1100px){:root{--ref-sidebar:0px}#krReferenceSidebar{display:none}body{padding-left:0!important}#publicPage .premium-dashboard-head{grid-template-columns:1fr!important;min-height:auto!important}#krReferenceQuick{display:none}#publicPage #locationCard,#publicPage .v3-weather,#publicPage #nearbyServicesCard,#publicPage .v3-expert,#publicPage .v3-bus,#publicPage .v3-livebus,#publicPage .v3-guide,#publicPage #chargingCard,#publicPage .parking-card,#publicPage #crowdCard,#publicPage .qr-card,#publicPage .safety-card,#publicPage #emergencyCard{grid-column:span 6!important}}
 @media(max-width:700px){#mainHeader .brand-sub,#mainHeader .brand-location{display:none!important}#mainHeader .brand-block{min-width:0}#mainHeader .top-navigation .nav-link:not(.nav-active){display:none!important}#publicPage .premium-dashboard-head>div:first-child{min-height:245px}#publicPage .premium-dashboard-head h1{font-size:34px!important}#publicPage .public-dashboard-grid>.card{grid-column:1/-1!important}}
 </style>
@@ -1630,7 +1630,7 @@ body.kr-inner-active #publicPage .kr-ref-bottom-row > .kr-ref-card .kr-ref-inner
     <button class="kr-side-item" onclick="navigateFromHome('locationCard')"><span>⌖</span> My Location</button>
     <button class="kr-side-item" onclick="navigateFromHome('weatherV11')"><span>☁</span> Weather</button>
     <button class="kr-side-item" onclick="navigateFromHome('v12BusTrackingCard')"><span>▣</span> Bus Services</button>
-    <button class="kr-side-item" onclick="navigateFromHome('nearbyServicesCard')"><span>⌂</span> Nearby Services</button>
+    <button class="kr-side-item" onclick="navigateFromHome('nearbyServicesCard')"><span>⌂</span> Services</button>
     <button class="kr-side-item" onclick="navigateFromHome('chargingCard')"><span>ϟ</span> Charging Stations</button>
     <button class="kr-side-item" onclick="navigateFromHome('parkingStations')"><span>▣</span> Parking</button>
     <button class="kr-side-item" onclick="navigateFromHome('crowdCard')"><span>♟</span> Live Crowd</button>
@@ -1671,7 +1671,6 @@ body.kr-inner-active #publicPage .kr-ref-bottom-row > .kr-ref-card .kr-ref-inner
       </button>
       <div id="languageDropdown" class="language-dropdown hidden">
         <button onclick="setLanguage('en')">🇬🇧 English</button>
-        <button onclick="setLanguage('hi')">🇮🇳 हिन्दी</button>
         <button onclick="setLanguage('mr')">मराठी</button>
         <button onclick="setLanguage('ta')">தமிழ்</button>
         <button onclick="setLanguage('te')">తెలుగు</button>
@@ -1782,7 +1781,7 @@ body.kr-inner-active #publicPage .kr-ref-bottom-row > .kr-ref-card .kr-ref-inner
 <h2>👤 <span id="welcomeUser">Public User</span></h2>
 <div id="accountInfo"></div>
 <!-- This button changes to logout when already logged in -->
-<button id="accountAction" class="purple" onclick="accountAction()">🔐 LOGIN / CREATE ACCOUNT</button>
+<button id="accountAction" class="purple" onclick="handleAccountAction()">🔐 LOGIN / CREATE ACCOUNT</button>
 </div>
 
 <div id="locationCard" class="card">
@@ -2517,8 +2516,6 @@ function applyLanguage(){
   if(typeof renderPublic === 'function') renderPublic();
 }
 
-applyLanguage();
-
 /* ---------------- Data ---------------- */
 let userLatitude=null,userLongitude=null,map=null,userMarker=null,destinationMarker=null,routeLine=null,scanner=null,selectedRating=0;
 let currentUser=JSON.parse(localStorage.getItem('kumbhCurrentUser')||'null');
@@ -2549,29 +2546,84 @@ let crowdReports=JSON.parse(localStorage.getItem('kumbhCrowd')||'[]');
 let visits=parseInt(localStorage.getItem('kumbhVisits')||'0')+1;localStorage.setItem('kumbhVisits',visits);
 function save(){localStorage.setItem('kumbhUsers',JSON.stringify(users));localStorage.setItem('kumbhServices',JSON.stringify(services));localStorage.setItem('kumbhCharging',JSON.stringify(chargingStations));localStorage.setItem('kumbhParking',JSON.stringify(parkingStations));localStorage.setItem('kumbhSOS',JSON.stringify(sosCases));localStorage.setItem('kumbhFeedback',JSON.stringify(feedbacks));localStorage.setItem('kumbhSafetyCases',JSON.stringify(safetyCases));localStorage.setItem('kumbhCrowd',JSON.stringify(crowdReports));}
 
+/* Initial UI language pass after application state is initialized. */
+applyLanguage();
+
 /* ---------------- Navigation / Login ---------------- */
-function openPage(id){document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));const page=document.getElementById(id);if(!page)return;page.classList.add('active');const access=document.getElementById('adminAccess');if(access)access.style.display='none';window.scrollTo(0,0);if(id==='publicPage')setTimeout(renderPublic,50);if(id==='ownerPage')renderOwnerDashboard()}
+function openPage(id){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  const page=document.getElementById(id);
+  if(!page)return;
+  page.classList.add('active');
+  const access=document.getElementById('adminAccess');
+  if(access)access.style.display='none';
+  window.scrollTo(0,0);
+  if(id==='publicPage')setTimeout(renderPublic,50);
+  if(id==='ownerPage' && typeof renderOwnerDashboard==='function')renderOwnerDashboard();
+}
 function goHome(){openPage('homePage')}
-function switchAuth(mode){loginBox.classList.toggle('hidden',mode!=='login');registerBox.classList.toggle('hidden',mode!=='register');loginTab.classList.toggle('activeTab',mode==='login');registerTab.classList.toggle('activeTab',mode==='register')}
-function registerUser(){let name=regName.value.trim(),phone=regPhone.value.trim(),password=regPassword.value;if(!name||!phone||!password)return alert('Please fill all fields.');let u={id:'USER'+Date.now(),name,phone,password,category:regCategory.value};users.push(u);currentUser=u;localStorage.setItem('kumbhCurrentUser',JSON.stringify(u));save();openPage('publicPage')}
-function loginUser(){let id=loginPhone.value.trim(),pass=loginPassword.value;let u=users.find(x=>(x.id===id||x.phone===id)&&x.password===pass);if(!u)return alert('Invalid login details.');currentUser=u;localStorage.setItem('kumbhCurrentUser',JSON.stringify(u));openPage('publicPage')}
-function accountAction(){if(currentUser){if(confirm('Logout from '+currentUser.name+'?')){currentUser=null;localStorage.removeItem('kumbhCurrentUser');renderPublic()}}else openPage('userLoginPage')}
-function renderPublic(){if(!document.getElementById('publicPage').classList.contains('active'))return;welcomeUser.textContent=currentUser?`${lang==='mr'?'स्वागत आहे':'Welcome'}, ${currentUser.name}`:(lang==='mr'?'सार्वजनिक यूजर':'Public User');accountInfo.innerHTML=currentUser?`🔓 ${lang==='mr'?'तुम्ही लॉगिन केले आहे. वैयक्तिक सेफ्टी फीचर्स सुरू आहेत.':'Logged in. Personal safety features are enabled.'}`:`🔒 ${lang==='mr'?'गेस्ट मोड: वैयक्तिक माहिती आणि सेफ्टी बँड फीचर्स लॉक आहेत.':'Guest mode: personal data and Safety Band features are locked.'}`;accountAction.innerHTML=currentUser?'🚪 '+(lang==='mr'?'लॉगआउट':'LOGOUT'):'🔐 '+(lang==='mr'?'लॉगिन / खाते तयार करा':'LOGIN / CREATE ACCOUNT');renderCharging();renderParking();renderCrowdQuestion()}
+function switchAuth(mode){
+  const loginBox=document.getElementById('loginBox');
+  const registerBox=document.getElementById('registerBox');
+  const loginTab=document.getElementById('loginTab');
+  const registerTab=document.getElementById('registerTab');
+  if(loginBox)loginBox.classList.toggle('hidden',mode!=='login');
+  if(registerBox)registerBox.classList.toggle('hidden',mode!=='register');
+  if(loginTab)loginTab.classList.toggle('activeTab',mode==='login');
+  if(registerTab)registerTab.classList.toggle('activeTab',mode==='register');
+}
+function registerUser(){
+  const regName=document.getElementById('regName');
+  const regPhone=document.getElementById('regPhone');
+  const regPassword=document.getElementById('regPassword');
+  const regCategory=document.getElementById('regCategory');
+  let name=regName?.value.trim()||'',phone=regPhone?.value.trim()||'',password=regPassword?.value||'';
+  if(!name||!phone||!password)return alert('Please fill all fields.');
+  let u={id:'USER'+Date.now(),name,phone,password,category:regCategory?.value||'general'};
+  users.push(u);currentUser=u;localStorage.setItem('kumbhCurrentUser',JSON.stringify(u));save();openPage('publicPage');
+}
+function loginUser(){
+  const loginPhone=document.getElementById('loginPhone');
+  const loginPassword=document.getElementById('loginPassword');
+  let id=loginPhone?.value.trim()||'',pass=loginPassword?.value||'';
+  let u=users.find(x=>(x.id===id||x.phone===id)&&x.password===pass);
+  if(!u)return alert('Invalid login details.');
+  currentUser=u;localStorage.setItem('kumbhCurrentUser',JSON.stringify(u));openPage('publicPage');
+}
+function handleAccountAction(){if(currentUser){if(confirm('Logout from '+currentUser.name+'?')){currentUser=null;localStorage.removeItem('kumbhCurrentUser');renderPublic()}}else openPage('userLoginPage')}
+function accountAction(){handleAccountAction()}
+function renderPublic(){
+  const publicPage=document.getElementById('publicPage');
+  if(!publicPage || !publicPage.classList.contains('active'))return;
+  const welcomeUser=document.getElementById('welcomeUser');
+  const accountInfo=document.getElementById('accountInfo');
+  const accountActionButton=document.getElementById('accountAction');
+  if(welcomeUser)welcomeUser.textContent=currentUser?`${lang==='mr'?'स्वागत आहे':'Welcome'}, ${currentUser.name}`:(lang==='mr'?'सार्वजनिक यूजर':'Public User');
+  if(accountInfo)accountInfo.innerHTML=currentUser?`🔓 ${lang==='mr'?'तुम्ही लॉगिन केले आहे. वैयक्तिक सेफ्टी फीचर्स सुरू आहेत.':'Logged in. Personal safety features are enabled.'}`:`🔒 ${lang==='mr'?'गेस्ट मोड: वैयक्तिक माहिती आणि सेफ्टी बँड फीचर्स लॉक आहेत.':'Guest mode: personal data and Safety Band features are locked.'}`;
+  if(accountActionButton)accountActionButton.innerHTML=currentUser?'🚪 '+(lang==='mr'?'लॉगआउट':'LOGOUT'):'🔐 '+(lang==='mr'?'लॉगिन / खाते तयार करा':'LOGIN / CREATE ACCOUNT');
+  renderCharging();
+  renderParking();
+  renderCrowdQuestion();
+  if(typeof renderEmergencyContacts==='function')renderEmergencyContacts();
+  if(typeof renderCrowdSummary==='function')renderCrowdSummary();
+  if(userLatitude!==null && typeof maybeShowCrowdPopup==='function')setTimeout(maybeShowCrowdPopup,30);
+  if(typeof updateKpis==='function')setTimeout(updateKpis,0);
+}
 
 /* ---------------- Exact device location + integrated map ---------------- */
 function initMap(){if(map)return;map=L.map('map').setView([19.9975,73.7898],15);L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'© Esri, HERE, Garmin, © OpenStreetMap contributors'}).addTo(map)}
-function getLocation(){locationStatus.textContent=lang==='mr'?'📡 तुमचे अचूक स्थान शोधत आहे...':'📡 Finding your exact location...';if(!navigator.geolocation)return alert('Geolocation is not supported.');navigator.geolocation.getCurrentPosition(p=>{userLatitude=p.coords.latitude;userLongitude=p.coords.longitude;let acc=Math.round(p.coords.accuracy);locationStatus.textContent=lang==='mr'?'✅ स्थान मिळाले':'✅ Location Found';locationResult.innerHTML=`<div class="result success"><b>Latitude:</b> ${userLatitude.toFixed(6)}<br><b>Longitude:</b> ${userLongitude.toFixed(6)}<br><b>${lang==='mr'?'GPS अचूकता':'GPS Accuracy'}:</b> ±${acc} m</div>`;document.getElementById('map').classList.remove('hidden');document.getElementById('mapNote').classList.remove('hidden');initMap();setTimeout(()=>{map.invalidateSize();showUserOnMap()},100);renderCrowdQuestion()},()=>{locationStatus.textContent=lang==='mr'?'❌ लोकेशन परवानगी द्या आणि पुन्हा प्रयत्न करा.':'❌ Unable to get location. Allow location permission and try again.'},{enableHighAccuracy:true,timeout:15000,maximumAge:0})}
+
 function showUserOnMap(){if(!map||userLatitude===null)return;if(userMarker)map.removeLayer(userMarker);userMarker=L.marker([userLatitude,userLongitude]).addTo(map).bindPopup('📍 Your exact GPS location');map.setView([userLatitude,userLongitude],16)}
 function straightDistance(a,b,c,d){const R=6371,rad=Math.PI/180,da=(c-a)*rad,db=(d-b)*rad;const h=Math.sin(da/2)**2+Math.cos(a*rad)*Math.cos(c*rad)*Math.sin(db/2)**2;return R*2*Math.atan2(Math.sqrt(h),Math.sqrt(1-h))}
 
 /* OSRM gives actual road route distance and route duration. */
-async function showRoute(dest,name,charge=''){if(userLatitude===null)return alert(lang==='mr'?'कृपया आधी तुमचे अचूक स्थान मिळवा.':'Please get your exact location first.');document.getElementById('map').classList.remove('hidden');initMap();let url=`https://router.project-osrm.org/route/v1/driving/${userLongitude},${userLatitude};${dest.lon},${dest.lat}?overview=full&geometries=geojson`;nearestResult.innerHTML='<div class="result info">🗺️ Calculating road route and travel time...</div>';try{let data=await fetch(url).then(r=>r.json());if(!data.routes||!data.routes.length)throw Error();let r=data.routes[0],km=r.distance/1000,min=Math.max(1,Math.round(r.duration/60));if(routeLine)map.removeLayer(routeLine);if(destinationMarker)map.removeLayer(destinationMarker);routeLine=L.geoJSON(r.geometry,{style:{weight:5}}).addTo(map);destinationMarker=L.marker([dest.lat,dest.lon]).addTo(map).bindPopup('📍 '+name);map.fitBounds(routeLine.getBounds(),{padding:[35,35]});nearestResult.innerHTML=`<div class="result success"><h3>📍 ${name}</h3><b>${lang==='mr'?'रस्त्याचे अंतर':'Road distance'}:</b> ${km.toFixed(2)} km<br><b>${lang==='mr'?'अंदाजे प्रवास वेळ':'Estimated travel time'}:</b> ${min} minutes${charge?'<br><b>'+ (lang==='mr'?'शुल्क':'Charges') +':</b> '+charge:''}<br><button class="green" onclick="openGoogleDirections(${dest.lat},${dest.lon})">🧭 ${lang==='mr'?'Google Maps मध्ये नेव्हिगेशन':'OPEN LIVE NAVIGATION'}</button></div>`;document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'})}catch(e){let km=straightDistance(userLatitude,userLongitude,dest.lat,dest.lon);nearestResult.innerHTML=`<div class="result warning"><b>${name}</b><br>Approx. distance: ${km.toFixed(2)} km<br>Route server unavailable. Open live navigation below.<br><button class="green" onclick="openGoogleDirections(${dest.lat},${dest.lon})">🧭 OPEN LIVE NAVIGATION</button></div>`}}
+async function showRoute(dest,name,charge=''){if(userLatitude===null)return alert(lang==='mr'?'कृपया आधी तुमचे अचूक स्थान मिळवा.':'Please get your exact location first.');document.getElementById('map').classList.remove('hidden');initMap();let url=`https://router.project-osrm.org/route/v1/driving/${userLongitude},${userLatitude};${dest.lon},${dest.lat}?overview=full&geometries=geojson`;const nearestResult=document.getElementById('nearestResult');if(!nearestResult)return;nearestResult.innerHTML='<div class="result info">🗺️ Calculating road route and travel time...</div>';try{let data=await fetch(url).then(r=>r.json());if(!data.routes||!data.routes.length)throw Error();let r=data.routes[0],km=r.distance/1000,min=Math.max(1,Math.round(r.duration/60));if(routeLine)map.removeLayer(routeLine);if(destinationMarker)map.removeLayer(destinationMarker);routeLine=L.geoJSON(r.geometry,{style:{weight:5}}).addTo(map);destinationMarker=L.marker([dest.lat,dest.lon]).addTo(map).bindPopup('📍 '+name);map.fitBounds(routeLine.getBounds(),{padding:[35,35]});nearestResult.innerHTML=`<div class="result success"><h3>📍 ${name}</h3><b>${lang==='mr'?'रस्त्याचे अंतर':'Road distance'}:</b> ${km.toFixed(2)} km<br><b>${lang==='mr'?'अंदाजे प्रवास वेळ':'Estimated travel time'}:</b> ${min} minutes${charge?'<br><b>'+ (lang==='mr'?'शुल्क':'Charges') +':</b> '+charge:''}<br><button class="green" onclick="openGoogleDirections(${dest.lat},${dest.lon})">🧭 ${lang==='mr'?'Google Maps मध्ये नेव्हिगेशन':'OPEN LIVE NAVIGATION'}</button></div>`;document.getElementById('map').scrollIntoView({behavior:'smooth',block:'center'})}catch(e){let km=straightDistance(userLatitude,userLongitude,dest.lat,dest.lon);nearestResult.innerHTML=`<div class="result warning"><b>${name}</b><br>Approx. distance: ${km.toFixed(2)} km<br>Route server unavailable. Open live navigation below.<br><button class="green" onclick="openGoogleDirections(${dest.lat},${dest.lon})">🧭 OPEN LIVE NAVIGATION</button></div>`}}
 function openGoogleDirections(lat,lon){window.open(`https://www.google.com/maps/dir/?api=1&origin=${userLatitude},${userLongitude}&destination=${lat},${lon}&travelmode=driving`,'_blank')}
 
 /* ---------------- Services ---------------- */
 function findNearest(type){if(userLatitude===null)return alert(lang==='mr'?'आधी तुमचे अचूक स्थान शोधा.':'Please get your exact location first.');let list=services.filter(x=>x.type===type);if(!list.length)return;let n=list.map(x=>({...x,d:straightDistance(userLatitude,userLongitude,x.lat,x.lon)})).sort((a,b)=>a.d-b.d)[0];showRoute(n,n.name,n.charge)}
-function renderCharging(){chargingStations.sort((a,b)=>userLatitude===null?0:straightDistance(userLatitude,userLongitude,a.lat,a.lon)-straightDistance(userLatitude,userLongitude,b.lat,b.lon));chargingStationsEl= document.getElementById('chargingStations');chargingStationsEl.innerHTML='';chargingStations.forEach(s=>{let free=s.slots.filter(Boolean).length;chargingStationsEl.innerHTML+=`<div class="station"><div class="station-head"><b>🔋 ${s.name}</b><span class="${free?'available':'busy'}">${free}/${s.slots.length} ${free?'AVAILABLE':'FULL'}</span></div><small>📍 ${s.address}</small><br><small>💰 ${s.charge}</small><div class="slots">${s.slots.map((x,i)=>`<div class="slot ${x?'free':'occupied'}">🔌 ${i+1}<br>${x?'FREE':'BUSY'}</div>`).join('')}</div><button class="blue" onclick="showRoute(chargingStations.find(x=>x.id==='${s.id}'),chargingStations.find(x=>x.id==='${s.id}').name,chargingStations.find(x=>x.id==='${s.id}').charge)">🗺️ ${lang==='mr'?'मार्ग, वेळ आणि शुल्क पहा':'VIEW MAP, TIME & CHARGES'}</button></div>`})}
-function renderParking(){let box=(arr,label)=>`<b>${label}: ${arr.filter(Boolean).length}/${arr.length} free</b><div class="slots">${arr.map((x,i)=>`<div class="slot ${x?'free':'occupied'}">${label[0]}${i+1}<br>${x?'FREE':'FULL'}</div>`).join('')}</div>`;parkingStations.sort((a,b)=>userLatitude===null?0:straightDistance(userLatitude,userLongitude,a.lat,a.lon)-straightDistance(userLatitude,userLongitude,b.lat,b.lon));let el=document.getElementById('parkingStations');el.innerHTML='';parkingStations.forEach(s=>{el.innerHTML+=`<div class="station"><div class="station-head"><b>🅿️ ${s.name}</b><span class="${s.ev?'available':'busy'}">${s.ev?'🔋 EV CHARGER':'No EV'}</span></div><small>📍 ${s.address}</small><br><small>💰 ${s.charge}</small>${box(s.car,'Car')}${box(s.bike,'Bike')}<button class="blue" onclick="showRoute(parkingStations.find(x=>x.id==='${s.id}'),parkingStations.find(x=>x.id==='${s.id}').name,parkingStations.find(x=>x.id==='${s.id}').charge)">🗺️ ${lang==='mr'?'मार्ग, वेळ आणि शुल्क पहा':'VIEW MAP, TIME & CHARGES'}</button></div>`})}
+
+
 
 /* ---------------- Crowd ---------------- */
 function nearestKumbhPlace(){let p=[{name:'Ramkund',lat:19.9975,lon:73.7898},{name:'Panchavati',lat:19.9905,lon:73.789},{name:'Trimbakeshwar Temple',lat:19.9443,lon:73.5287}];if(userLatitude===null)return p[0];return p.map(x=>({...x,d:straightDistance(userLatitude,userLongitude,x.lat,x.lon)})).sort((a,b)=>a.d-b.d)[0]}
@@ -2594,7 +2646,7 @@ function shareLocation(){if(userLatitude===null)return alert('Get location first
 function loginVolunteer(){if(volunteerId.value==='VOL001'&&volunteerPassword.value==='1234')openPage('volunteerPage');else alert('Invalid Volunteer credentials.')}
 function showVolunteerSOS(){volunteerContent.innerHTML='<div class="card"><h2>🚨 Active SOS</h2>'+(sosCases.filter(x=>x.status==='ACTIVE').map(x=>`<div class="case"><b>${x.id}</b><br>${x.user}<br>${x.time}<br>GPS: ${x.location.lat}, ${x.location.lon}<button class="green" onclick="acceptSOS('${x.id}')">ACCEPT CASE</button></div>`).join('')||'<p>No active SOS.</p>')+'</div>'}
 function acceptSOS(id){let x=sosCases.find(x=>x.id===id);x.status='ASSIGNED';x.assignedVolunteer='VOL001';save();showVolunteerSOS()}
-function showAddLocation(){volunteerContent.innerHTML=`<div class="card"><h2>➕ Add Service / Charging / Parking Location</h2><select id="newType"><option value="service">Service</option><option value="charging">Phone Charging Station</option><option value="parking">Parking</option></select><input id="newName" placeholder="Name"><input id="newAddress" placeholder="Address"><input id="newLat" placeholder="Latitude"><input id="newLon" placeholder="Longitude"><input id="newCharge" placeholder="Charges / price"><button class="blue" onclick="fillGPS()">📍 USE MY CURRENT GPS</button><button class="green" onclick="saveLocation()">SAVE LOCATION</button></div>`}
+
 function fillGPS(){if(userLatitude===null)return alert('Get your exact location first.');newLat.value=userLatitude;newLon.value=userLongitude}
 function saveLocation(){let type=newType.value,name=newName.value.trim(),lat=+newLat.value,lon=+newLon.value;if(!name||isNaN(lat)||isNaN(lon))return alert('Fill name and exact coordinates.');if(type==='charging')chargingStations.push({id:'CHG'+Date.now(),name,address:newAddress.value,lat,lon,slots:[1,1,1,1,0,0],charge:newCharge.value||'As displayed'});else if(type==='parking')parkingStations.push({id:'PARK'+Date.now(),name,address:newAddress.value,lat,lon,car:[1,1,0,1],bike:[1,0,1,1],ev:false,charge:newCharge.value||'As displayed'});else services.push({id:'SER'+Date.now(),type:'hospital',name,lat,lon,charge:newCharge.value||'As applicable'});save();alert('Location saved.');showAddLocation()}
 function showQRGenerator(){volunteerContent.innerHTML=`<div class="card"><h2>🔲 Generate Service QR</h2><select id="qrSelect">${services.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select><button class="purple" onclick="generateQR()">GENERATE QR</button><div id="qrOutput" style="margin:15px"></div></div>`}
@@ -2603,12 +2655,7 @@ function showSafetyCases(){volunteerContent.innerHTML='<div class="card"><h2>�
 
 /* ---------------- Admin ---------------- */
 function loginOwner(){if(ownerId.value==='ADMIN'&&ownerPassword.value==='admin2027')openPage('ownerPage');else alert('Invalid Admin credentials.')}
-function renderOwnerDashboard(){ownerStats.innerHTML=`<div class="stat">👥 Visits<b>${visits}</b></div><div class="stat">📍 Services<b>${services.length}</b></div><div class="stat">🚨 Active SOS<b>${sosCases.filter(x=>x.status==='ACTIVE').length}</b></div><div class="stat">🟡 Safety Cases<b>${safetyCases.length}</b></div><div class="stat">🔋 Charging<b>${chargingStations.length}</b></div><div class="stat">⭐ Avg Rating<b>${feedbacks.length?(feedbacks.reduce((a,x)=>a+x.rating,0)/feedbacks.length).toFixed(1):'0'}</b></div>`;
-ownerSOS.innerHTML=sosCases.map(x=>`<div class="case"><b>${x.id}</b><br>${x.status} — ${x.user}</div>`).join('No SOS cases.');
-ownerSafetyCases.innerHTML=safetyCases.map(x=>`<div class="case"><b>${x.caseId}</b><br>${x.person.name}<br>Found by: ${x.finder.name}</div>`).join('No Safety Band cases.');
-ownerFeedback.innerHTML=feedbacks.map(x=>`<div class="case">⭐ ${x.rating}/5 — ${x.user}<br>${x.comment||'No comment'}</div>`).join('No feedback yet.');
-ownerServices.innerHTML=[...services,...chargingStations,...parkingStations].map(x=>`<div class="service-item"><b>${x.name}</b><br>📍 ${x.lat.toFixed(6)}, ${x.lon.toFixed(6)}<br>${x.charge||''}</div>`).join('No locations.');
-}
+
 
 
 /* ================= ENHANCED LIVE LOCATION + NO-CODE ADMIN ================= */
@@ -2620,6 +2667,9 @@ function startLiveLocation(){
   locationWatchId=navigator.geolocation.watchPosition(p=>{
     userLatitude=p.coords.latitude; userLongitude=p.coords.longitude;
     const acc=Math.round(p.coords.accuracy);
+    const locationStatus=document.getElementById('locationStatus');
+    const locationResult=document.getElementById('locationResult');
+    if(!locationStatus||!locationResult)return;
     locationStatus.textContent='🟢 Live location active';
     locationResult.innerHTML=`<div class="result success"><b>Live GPS:</b> ${userLatitude.toFixed(6)}, ${userLongitude.toFixed(6)}<br><b>Accuracy:</b> ±${acc} m<br><small>Nearby charging and parking are automatically sorted around your current position.</small></div>`;
     document.getElementById('map').classList.remove('hidden');document.getElementById('mapNote').classList.remove('hidden');initMap();
@@ -2646,7 +2696,7 @@ function adminAddLocation(){
 }
 function adminUseLiveGPS(){if(userLatitude===null){startLiveLocation();return alert('Live location is starting. Press USE MY LIVE GPS again after permission is granted.')}admLat.value=userLatitude;admLon.value=userLongitude}
 function adminSaveLocation(){let type=admType.value,name=admName.value.trim(),lat=+admLat.value,lon=+admLon.value;if(!name||!Number.isFinite(lat)||!Number.isFinite(lon))return alert('Enter name and exact GPS coordinates.');let address=admAddress.value.trim(),charge=admCharge.value.trim()||'As displayed';if(type==='charging')chargingStations.push({id:'CHG'+Date.now(),name,address,lat,lon,slots:[1,1,1,1,0,0],charge,verified:false});else if(type==='parking')parkingStations.push({id:'PARK'+Date.now(),name,address,lat,lon,car:[1,1,1,0,0,0],bike:[1,1,1,1,0,0],ev:false,charge,verified:false});else services.push({id:'SER'+Date.now(),type:'service',name,address,lat,lon,charge});save();renderOwnerDashboard();adminManageLocations();alert('Location added successfully.')}
-function adminManageLocations(){let all=[...chargingStations.map(x=>({...x,kind:'charging'})),...parkingStations.map(x=>({...x,kind:'parking'})),...services.map(x=>({...x,kind:'service'}))];adminManager.innerHTML='<h3>✏️ Manage Locations</h3>'+all.map(x=>`<div class="service-item"><b>${x.name}</b><br><small>${x.kind.toUpperCase()} • ${x.address||''}</small><br><small>${x.lat.toFixed(6)}, ${x.lon.toFixed(6)}</small><div class="grid"><button class="blue" onclick="adminEditLocation('${x.kind}','${x.id}')">EDIT</button><button class="red" onclick="adminDeleteLocation('${x.kind}','${x.id}')">DELETE</button></div></div>`).join('No locations.')}
+function adminManageLocations(){let all=[...chargingStations.map(x=>({...x,kind:'charging'})),...parkingStations.map(x=>({...x,kind:'parking'})),...services.map(x=>({...x,kind:'service'}))];adminManager.innerHTML='<h3>✏️ Manage Locations</h3>'+all.map(x=>`<div class="service-item"><b>${x.name}</b><br><small>${x.kind.toUpperCase()} • ${x.address||''}</small><br><small>${x.lat.toFixed(6)}, ${x.lon.toFixed(6)}</small><div class="grid"><button class="blue" onclick="adminEditLocation('${x.kind}','${x.id}')">EDIT</button><button class="red" onclick="adminDeleteLocation('${x.kind}','${x.id}')">DELETE</button></div></div>`).join('')||'No locations.'}
 function adminEditLocation(kind,id){let x=(kind==='charging'?chargingStations:kind==='parking'?parkingStations:services).find(v=>v.id===id);adminManager.innerHTML=`<div class="card"><h3>✏️ Edit: ${x.name}</h3><input id="edName" value="${x.name}"><input id="edAddress" value="${x.address||''}"><input id="edLat" type="number" step="any" value="${x.lat}"><input id="edLon" type="number" step="any" value="${x.lon}"><input id="edCharge" value="${x.charge||''}"><button class="green" onclick="adminUpdateLocation('${kind}','${id}')">SAVE CHANGES</button><button class="blue" onclick="adminManageLocations()">CANCEL</button></div>`}
 function adminUpdateLocation(kind,id){let arr=kind==='charging'?chargingStations:kind==='parking'?parkingStations:services,x=arr.find(v=>v.id===id);x.name=edName.value.trim();x.address=edAddress.value.trim();x.lat=+edLat.value;x.lon=+edLon.value;x.charge=edCharge.value.trim();save();renderOwnerDashboard();adminManageLocations();renderCharging();renderParking();alert('Changes saved.')}
 function adminDeleteLocation(kind,id){if(!confirm('Delete this location?'))return;if(kind==='charging')chargingStations=chargingStations.filter(x=>x.id!==id);else if(kind==='parking')parkingStations=parkingStations.filter(x=>x.id!==id);else services=services.filter(x=>x.id!==id);save();renderOwnerDashboard();adminManageLocations();renderCharging();renderParking()}
@@ -2654,7 +2704,7 @@ async function adminDiscoverNearby(){if(userLatitude===null){startLiveLocation()
 function adminImportDiscovered(type,name,lat,lon){if(type==='parking')parkingStations.push({id:'PARK'+Date.now(),name,address:'Imported from nearby map data',lat,lon,car:[1,1,1,0,0,0],bike:[1,1,1,1,0,0],ev:false,charge:'Update from dashboard',verified:false});else chargingStations.push({id:'CHG'+Date.now(),name,address:'Imported from nearby map data',lat,lon,slots:[1,1,1,0],charge:'Update from dashboard',verified:false});save();renderOwnerDashboard();alert('Imported. Edit availability and charges from the admin dashboard.')}
 function renderOwnerDashboard(){
  ownerStats.innerHTML=`<div class="stat">👥 Visits<b>${visits}</b></div><div class="stat">📍 Services<b>${services.length}</b></div><div class="stat">🚨 Active SOS<b>${sosCases.filter(x=>x.status==='ACTIVE').length}</b></div><div class="stat">🟡 Safety Cases<b>${safetyCases.length}</b></div><div class="stat">🔋 Charging<b>${chargingStations.length}</b></div><div class="stat">🅿️ Parking<b>${parkingStations.length}</b></div>`;
- ownerSOS.innerHTML=sosCases.map(x=>`<div class="case"><b>${x.id}</b><br>${x.status} — ${x.user}</div>`).join('No SOS cases.');ownerSafetyCases.innerHTML=safetyCases.map(x=>`<div class="case"><b>${x.caseId}</b><br>${x.person.name}<br>Found by: ${x.finder.name}</div>`).join('No Safety Band cases.');ownerFeedback.innerHTML=feedbacks.map(x=>`<div class="case">⭐ ${x.rating}/5 — ${x.user}<br>${x.comment||'No comment'}</div>`).join('No feedback yet.');ownerServices.innerHTML=[...services,...chargingStations,...parkingStations].map(x=>`<div class="service-item"><b>${x.name}</b><br>📍 ${x.lat.toFixed(6)}, ${x.lon.toFixed(6)}<br>${x.charge||''}</div>`).join('No locations.');
+ ownerSOS.innerHTML=sosCases.map(x=>`<div class="case"><b>${x.id}</b><br>${x.status} — ${x.user}</div>`).join('')||'No SOS cases.';ownerSafetyCases.innerHTML=safetyCases.map(x=>`<div class="case"><b>${x.caseId}</b><br>${x.person.name}<br>Found by: ${x.finder.name}</div>`).join('')||'No Safety Band cases.';ownerFeedback.innerHTML=feedbacks.map(x=>`<div class="case">⭐ ${x.rating}/5 — ${x.user}<br>${x.comment||'No comment'}</div>`).join('')||'No feedback yet.';ownerServices.innerHTML=[...services,...chargingStations,...parkingStations].map(x=>`<div class="service-item"><b>${x.name}</b><br>📍 ${x.lat.toFixed(6)}, ${x.lon.toFixed(6)}<br>${x.charge||''}</div>`).join('')||'No locations.';
 }
 </script>
 
@@ -2763,54 +2813,73 @@ function injectAdminV4(){
 /* Override registration to save emergency contacts */
 const _registerUser = registerUser;
 registerUser = function(){
-  let name=regName.value.trim(),phone=regPhone.value.trim(),password=regPassword.value;
+  const regName=document.getElementById('regName');const regPhone=document.getElementById('regPhone');const regPassword=document.getElementById('regPassword');const regCategory=document.getElementById('regCategory');const regEmergency1=document.getElementById('regEmergency1');const regEmergencyPhone1=document.getElementById('regEmergencyPhone1');const regEmergency2=document.getElementById('regEmergency2');const regEmergencyPhone2=document.getElementById('regEmergencyPhone2');let name=regName?.value.trim()||'',phone=regPhone?.value.trim()||'',password=regPassword?.value||'';
   if(!name||!phone||!password) return alert('Please fill all fields.');
   if(!document.getElementById('regEmergencyPhone1')?.value.trim() || !document.getElementById('regEmergencyPhone2')?.value.trim())
     return alert('Please add both emergency contact phone numbers.');
-  let u={id:'USER'+Date.now(),name,phone,password,category:regCategory.value};
+  let u={id:'USER'+Date.now(),name,phone,password,category:regCategory?.value||'general'};
   users.push(u); currentUser=u;
   emergencyContacts[u.id]=[
-    {name:regEmergency1.value.trim(),phone:regEmergencyPhone1.value.trim()},
-    {name:regEmergency2.value.trim(),phone:regEmergencyPhone2.value.trim()}
+    {name:regEmergency1?.value.trim()||'',phone:regEmergencyPhone1?.value.trim()||''},
+    {name:regEmergency2?.value.trim()||'',phone:regEmergencyPhone2?.value.trim()||''}
   ];
   localStorage.setItem('kumbhCurrentUser',JSON.stringify(u)); save(); saveV4(); openPage('publicPage');
 }
 
-/* Override public renderer */
-const _renderPublic = renderPublic;
-renderPublic = function(){
-  _renderPublic();
-  setTimeout(()=>{
-    renderEmergencyContacts();
-    renderCrowdSummary();
-    if(userLatitude!==null) maybeShowCrowdPopup();
-  },30);
-}
-
 function renderEmergencyContacts(){
-  const el=document.getElementById('emergencyContactView'); if(!el) return;
-  if(!currentUser){el.innerHTML='<p>🔒 Login to add and use your personal emergency contacts.</p>';return;}
-  const c=emergencyContacts[currentUser.id]||[];
-  el.innerHTML=c.length?c.map((x,i)=>`<div class="application"><b>Contact ${i+1}:</b> ${x.name||'Not set'} — ${x.phone||'Not set'}</div>`).join(''):
-  '<p>No emergency contacts saved.</p>';
+  const out=document.getElementById('krFinalEmergencyContacts')||
+            document.getElementById('emergencyContactView');
+  if(!out)return;
+  const user=(typeof currentUser!=='undefined')?currentUser:null;
+  const store=(typeof emergencyContacts!=='undefined')?emergencyContacts:{};
+  const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  if(!user){
+    out.innerHTML='<div class="result info">🔒 Login to add and use your personal emergency contacts.</div>';
+    return;
+  }
+  const contacts=Array.isArray(store[user.id])?store[user.id]:[];
+  if(!contacts.length){
+    out.innerHTML='<div class="result info">No emergency contacts saved yet. Click <b>Edit Contacts</b> to add them.</div>';
+    return;
+  }
+  out.innerHTML=contacts.slice(0,2).map((c,i)=>`
+    <div class="application">
+      <b>Contact ${i+1}:</b> ${esc(c.name||'Not set')} — ${esc(c.phone||'Not set')}
+    </div>`).join('');
 }
 
 function editEmergencyContacts(){
-  if(!currentUser) return openPage('userLoginPage');
-  const c=emergencyContacts[currentUser.id]||[{},{ }];
-  const card=document.getElementById('emergencyContactsCard');
-  card.querySelector('#emergencyContactView').innerHTML=`
-   <input id="editEC1Name" placeholder="Contact 1 name" value="${c[0]?.name||''}">
-   <input id="editEC1Phone" placeholder="Contact 1 phone" value="${c[0]?.phone||''}">
-   <input id="editEC2Name" placeholder="Contact 2 name" value="${c[1]?.name||''}">
-   <input id="editEC2Phone" placeholder="Contact 2 phone" value="${c[1]?.phone||''}">
-   <button class="green" onclick="saveEmergencyContacts()">SAVE CONTACTS</button>`;
+  if(typeof currentUser==='undefined'||!currentUser)return openPage('userLoginPage');
+  const store=(typeof emergencyContacts!=='undefined')?emergencyContacts:{};
+  const contacts=Array.isArray(store[currentUser.id])?store[currentUser.id]:[];
+  const a=contacts[0]||{},b=contacts[1]||{};
+  const out=document.getElementById('krFinalEmergencyContacts')||
+            document.getElementById('emergencyContactView');
+  if(!out)return;
+  const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  out.innerHTML=`
+    <input id="editEC1Name" placeholder="Contact 1 name" value="${esc(a.name||'')}">
+    <input id="editEC1Phone" placeholder="Contact 1 phone" value="${esc(a.phone||'')}">
+    <input id="editEC2Name" placeholder="Contact 2 name" value="${esc(b.name||'')}">
+    <input id="editEC2Phone" placeholder="Contact 2 phone" value="${esc(b.phone||'')}">
+    <div class="grid">
+      <button class="green" type="button" onclick="saveEmergencyContacts()">SAVE CONTACTS</button>
+      <button class="gray" type="button" onclick="renderEmergencyContacts()">CANCEL</button>
+    </div>`;
 }
+
 function saveEmergencyContacts(){
+  if(typeof currentUser==='undefined'||!currentUser)return;
+  if(typeof emergencyContacts==='undefined')emergencyContacts={};
+  const value=id=>document.getElementById(id)?.value.trim()||'';
   emergencyContacts[currentUser.id]=[
-    {name:editEC1Name.value.trim(),phone:editEC1Phone.value.trim()},
-    {name:editEC2Name.value.trim(),phone:editEC2Phone.value.trim()}
-  ]; saveV4(); renderEmergencyContacts(); alert('Emergency contacts saved.');
+    {name:value('editEC1Name'),phone:value('editEC1Phone')},
+    {name:value('editEC2Name'),phone:value('editEC2Phone')}
+  ];
+  if(typeof saveV4==='function')saveV4();
+  else localStorage.setItem('kumbhEmergencyContacts',JSON.stringify(emergencyContacts));
+  renderEmergencyContacts();
+  alert('Emergency contacts saved.');
 }
 function shareEmergencyWithContacts(){
   if(!currentUser) return alert('Please login first.');
@@ -2855,25 +2924,7 @@ function submitCrowdFromPopup(level){
   alert('Thank you. Nearby users will now see the updated crowd status in this prototype.');
 }
 /* Override original crowd click if existing buttons use it */
-const _reportCrowd = typeof reportCrowd==='function'?reportCrowd:null;
-window.reportCrowd=function(level){
-  const p=nearestKumbhPlace();
-  crowdReports.push({place:p.name,level,timestamp:Date.now(),user:currentUser?.id||'GUEST'});
-  save(); renderCrowdQuestion(); renderCrowdSummary();
-}
-
 /* Override location success by wrapping geolocation watcher through polling existing variables */
-const _startLiveLocation = startLiveLocation;
-startLiveLocation = function(){
-  _startLiveLocation();
-  const t=setInterval(()=>{
-    if(userLatitude!==null){
-      renderCharging(); renderParking(); renderCrowdQuestion(); renderCrowdSummary(); maybeShowCrowdPopup();
-      clearInterval(t);
-    }
-  },500);
-}
-
 /* Volunteer application from user */
 function showVolunteerApplication(){
   if(!currentUser) return alert('Please create an account/login before applying as a volunteer.');
@@ -2892,8 +2943,6 @@ function submitVolunteerApplication(){
 }
 
 /* Admin approval */
-const _renderOwnerDashboard = renderOwnerDashboard;
-renderOwnerDashboard=function(){_renderOwnerDashboard();setTimeout(renderVolunteerApplicationsAdmin,20)}
 function renderVolunteerApplicationsAdmin(){
   const el=document.getElementById('volunteerApplicationsAdmin'); if(!el) return;
   if(!volunteerApplications.length){el.innerHTML='<p>No volunteer applications yet.</p>';return;}
@@ -2912,13 +2961,6 @@ function approveVolunteer(id){
 function rejectVolunteer(id){const a=volunteerApplications.find(x=>x.id===id);if(a){a.status='REJECTED';saveV4();renderVolunteerApplicationsAdmin();}}
 
 /* Replace volunteer login: accepts admin-approved temporary IDs */
-const _loginVolunteer = loginVolunteer;
-loginVolunteer=function(){
-  const id=volunteerId.value.trim(),pass=volunteerPassword.value;
-  const a=volunteerApplications.find(x=>x.status==='APPROVED'&&x.volunteerId===id&&(x.password||x.tempPassword)===pass);
-  if(a){volunteerSession={appId:a.id,name:a.name,volunteerId:a.volunteerId};saveV4();openPage('volunteerPage');if(a.mustChangePassword)setTimeout(()=>showChangeVolunteerPassword(),100);return;}
-  _loginVolunteer();
-}
 function showChangeVolunteerPassword(){
   volunteerContent.innerHTML=`<div class="card"><h2>🔐 Change Temporary Password</h2><p>You were approved as a volunteer. Please change your temporary password.</p><input id="newVolunteerPassword" type="password" placeholder="New password"><button class="green" onclick="changeVolunteerPassword()">SAVE NEW PASSWORD</button></div>`;
 }
@@ -3091,7 +3133,15 @@ function saveProfileV5(){
   if(f){const r=new FileReader();r.onload=e=>{u.profilePhoto=e.target.result;saveV5AndRefresh();closeV5Modal();};r.readAsDataURL(f);}
   else {saveV5AndRefresh();closeV5Modal();}
 }
-function saveV5AndRefresh(){try{saveV4();}catch(e){try{save();}catch(_){}}refreshAccountCorner();renderAccountPanel();}
+function saveV5AndRefresh(){
+  try{saveV4();}catch(e){}
+  try{
+    save();
+    if(currentUser) localStorage.setItem('kumbhCurrentUser',JSON.stringify(currentUser));
+  }catch(e){}
+  if(typeof refreshAccountCorner==='function') refreshAccountCorner();
+  if(typeof renderAccountPanel==='function') renderAccountPanel();
+}
 function openSettings(){
   openV5Modal(`<h2>⚙️ Settings</h2>
     <button class="dark" onclick="setThemeV5('dark')">🌙 DARK MODE</button>
@@ -3152,25 +3202,7 @@ function submitVolunteerApplicationV5(){
 }
 
 /* Approval: credentials delivered to applicant account, not only alert */
-approveVolunteer=function(id){
-  const a=volunteerApplications.find(x=>x.id===id);if(!a)return;
-  a.status='APPROVED';a.volunteerId='VOL'+String(Math.floor(100000+Math.random()*899999));a.tempPassword='K'+Math.floor(1000+Math.random()*8999);a.mustChangePassword=true;
-  a.credentialsDelivered=true;a.credentialsMessage=`Approved on ${new Date().toLocaleString()}. Temporary credentials issued.`;
-  saveV5AndRefresh();if(typeof renderVolunteerApplicationsAdmin==='function')renderVolunteerApplicationsAdmin();
-  alert('Volunteer approved. Credentials are now available to the applicant in their account notification.');
-}
-
 /* Prevent duplicate volunteer dashboard and show new volunteer only in volunteer section */
-loginVolunteer=function(){
-  const id=volunteerId.value.trim(),pass=volunteerPassword.value;
-  const a=volunteerApplications.find(x=>x.status==='APPROVED'&&x.volunteerId===id&&(x.password||x.tempPassword)===pass);
-  if(!a)return alert('Invalid Volunteer ID or password.');
-  volunteerSession={appId:a.id,name:a.name,volunteerId:a.volunteerId};localStorage.setItem('kumbhVolunteerSession',JSON.stringify(volunteerSession));
-  openPage('volunteerPage');
-  document.getElementById('volunteerContent').innerHTML='';
-  if(a.mustChangePassword)showChangeVolunteerPassword();else showVolunteerHome();
-  refreshAccountCorner();
-}
 showVolunteerHome=function(){
   const a=volunteerApplications.find(x=>x.id===volunteerSession?.appId);
   document.getElementById('volunteerContent').innerHTML=`<div class="card volunteer-only-banner"><h2>🤝 Welcome ${a?.name||'Volunteer'}</h2><p>Verified Volunteer ID: <b>${a?.volunteerId||''}</b></p><div class="grid">
@@ -3189,8 +3221,6 @@ renderAccountPanel=function(){
     if(a){const p=document.getElementById('accountPanel');p.insertAdjacentHTML('afterbegin',`<div class="volunteer-only-banner"><b>🎉 Volunteer Application Approved</b><br>Temporary ID: <b>${a.volunteerId}</b><br>Temporary Password: <b>${a.tempPassword}</b><br><small>Change your password after first volunteer login.</small></div>`);}
   }
 }
-const _openPageV5=typeof openPage==='function'?openPage:null;
-if(_openPageV5){openPage=function(id){_openPageV5(id);setTimeout(refreshAccountCorner,30);}}
 document.getElementById('v5Modal').addEventListener('click',e=>{if(e.target.id==='v5Modal'){stopSelfieV5();closeV5Modal();}});
 setTimeout(refreshAccountCorner,200);
 
@@ -3233,17 +3263,30 @@ function sendResetVerification(){
 function completePasswordReset(){
   const otp=document.getElementById('resetOtp').value.trim();
   const pass=document.getElementById('resetNewPassword').value;
-  if(otp!==resetCode){document.getElementById('resetStatus').innerHTML='❌ Incorrect verification code.';return;}
-  if(pass.length<4){document.getElementById('resetStatus').innerHTML='❌ Password must be at least 4 characters.';return;}
+  const st=document.getElementById('resetStatus');
+  if(otp!==resetCode){st.innerHTML='❌ Incorrect verification code.';return;}
+  if(pass.length<4){st.innerHTML='❌ Password must be at least 4 characters.';return;}
+
   if(resetRole==='volunteer'){
-    resetTarget.password=pass; resetTarget.tempPassword=pass; resetTarget.mustChangePassword=false;
-    if(typeof saveV4==='function')saveV4();
+    resetTarget.password=pass;
+    resetTarget.tempPassword=pass;
+    resetTarget.mustChangePassword=false;
+    if(typeof saveV4==='function') saveV4();
   }else{
-    let users=resetAccounts();
-    const i=users.findIndex(x=>x===resetTarget);
-    if(i>=0){users[i].password=pass;localStorage.setItem('kumbhUsers',JSON.stringify(users));}
+    const u=users.find(x=>x.id===resetTarget.id);
+    if(u){
+      u.password=pass;
+      save();
+      if(currentUser && currentUser.id===u.id){
+        currentUser.password=pass;
+        localStorage.setItem('kumbhCurrentUser',JSON.stringify(currentUser));
+      }
+    }else{
+      st.innerHTML='❌ Account could not be updated.';
+      return;
+    }
   }
-  document.getElementById('resetStatus').innerHTML='✅ Password reset successfully.';
+  st.innerHTML='✅ Password reset successfully.';
   setTimeout(closePasswordReset,800);
 }
 function notifyVolunteerCredentials(a, volunteerId, tempPassword){
@@ -3317,47 +3360,6 @@ document.addEventListener('keydown', function(e){
 
 /* Also make approved volunteer credentials usable instead of only VOL001/1234 */
 const originalVolunteerLoginV10 = loginVolunteer;
-loginVolunteer = function(){
-  const id = document.getElementById('volunteerId').value.trim();
-  const pass = document.getElementById('volunteerPassword').value;
-
-  // Demo volunteer account
-  if(id === 'VOL001' && pass === '1234'){
-    volunteerSession = {id:'VOL001', name:'Demo Volunteer', firstLogin:false};
-    localStorage.setItem('kumbhVolunteerSession', JSON.stringify(volunteerSession));
-    refreshAccountCorner();
-    openPage('volunteerPage');
-    return;
-  }
-
-  // Approved volunteer account
-  const applications = JSON.parse(localStorage.getItem('kumbhVolunteerApplications') || '[]');
-  const applicant = applications.find(a =>
-    a.status === 'APPROVED' &&
-    a.tempId === id &&
-    a.tempPassword === pass
-  );
-
-  if(applicant){
-    volunteerSession = {
-      id: applicant.tempId,
-      name: applicant.name,
-      email: applicant.email,
-      phone: applicant.phone,
-      firstLogin: !!applicant.firstLogin
-    };
-    localStorage.setItem('kumbhVolunteerSession', JSON.stringify(volunteerSession));
-    refreshAccountCorner();
-
-    if(applicant.firstLogin){
-      alert('Welcome! This is your first login. Please change your temporary password in your profile/settings.');
-    }
-    openPage('volunteerPage');
-    return;
-  }
-
-  alert('Invalid Volunteer ID or password.');
-};
 </script>
 
 
@@ -3370,17 +3372,6 @@ let guideRequests=JSON.parse(localStorage.getItem('kumbhGuideRequests')||'[]'),c
 function saveV11(){localStorage.setItem('kumbhGuideRequests',JSON.stringify(guideRequests));}
 
 /* Fix: approval saves volunteerId, older login looked only for tempId */
-loginVolunteer=function(){
- const id=(document.getElementById('volunteerId')?.value||'').trim().toUpperCase(),pass=document.getElementById('volunteerPassword')?.value||'';
- const apps=JSON.parse(localStorage.getItem('kumbhVolunteerApplications')||'[]');
- if(id==='VOL001'&&pass==='1234'){volunteerSession={appId:null,volunteerId:'VOL001',id:'VOL001',name:'Demo Volunteer'};localStorage.setItem('kumbhVolunteerSession',JSON.stringify(volunteerSession));refreshAccountCorner();openPage('volunteerPage');showVolunteerHome();return;}
- const a=apps.find(x=>x.status==='APPROVED'&&String(x.volunteerId||x.tempId||'').trim().toUpperCase()===id&&(x.password||x.tempPassword||'')===pass);
- if(!a)return alert('Invalid Volunteer ID or password. Use the temporary ID and password issued after approval.');
- volunteerSession={appId:a.id,volunteerId:a.volunteerId||a.tempId,id:a.volunteerId||a.tempId,name:a.name,email:a.email||'',phone:a.phone||'',firstLogin:!!(a.mustChangePassword||a.firstLogin)};
- localStorage.setItem('kumbhVolunteerSession',JSON.stringify(volunteerSession));refreshAccountCorner();openPage('volunteerPage');
- if(volunteerSession.firstLogin)setTimeout(showChangeVolunteerPassword,100);else showVolunteerHome();
-};
-
 document.addEventListener('DOMContentLoaded',()=>{
  const p=document.getElementById('publicPage');if(p&&!document.getElementById('weatherV11')){
   const w=document.createElement('div');w.className='card';w.id='weatherV11';w.innerHTML='<h2>🌦️ Weather Report for Your Area</h2><p class="map-note">Uses live GPS when available; otherwise Nashik area.</p><button class="blue" onclick="loadWeatherV11()">📍 GET AREA WEATHER</button><div id="weatherResultV11" class="result info">Get location for exact-area weather.</div>';p.insertBefore(w,p.children[2]||null);
@@ -3400,16 +3391,11 @@ function expertV11(){
  if(typeof crowdAggregate==='function'){const x=crowdAggregate(p.name);if(x.level==='high')a.push(`🚨 ${p.name} has high recent crowd reports. Prefer official alternate routes.`);else if(x.level==='medium')a.push(`🟡 ${p.name} has moderate crowd reports. Keep children and elderly companions close.`);}
  if(!a.length)a.push(`📍 ${p.name}: stay hydrated, keep emergency contacts reachable and follow official on-site instructions.`);el.innerHTML='<ul style="padding-left:20px;margin:0">'+a.map(x=>'<li style="margin:8px 0">'+x+'</li>').join('')+'</ul>';
 }
-const _liveV11=startLiveLocation;startLiveLocation=function(){_liveV11();setTimeout(()=>{loadWeatherV11();expertV11();},1500);};
-
 function showGuideV11(){const p=nearestKumbhPlace(),el=document.getElementById('guideResultV11');el.innerHTML=`<div class="guide-card"><input id="gName" placeholder="Your name" value="${currentUser?.name||''}"><input id="gPhone" placeholder="Phone number" value="${currentUser?.phone||''}"><select id="gArea"><option>${p.name}</option><option>Ramkund</option><option>Panchavati</option><option>Trimbakeshwar</option><option>Tapovan</option></select><select id="gDuration"><option>1 hour</option><option>2 hours</option><option>Half day</option></select><textarea id="gNotes" placeholder="What should the guide explain?"></textarea><button class="green" onclick="submitGuideV11()">SUBMIT GUIDE REQUEST</button></div>`;}
-function submitGuideV11(){if(!gName.value.trim()||!gPhone.value.trim())return alert('Enter name and phone number.');guideRequests.push({id:'GUIDE'+Date.now(),name:gName.value.trim(),phone:gPhone.value.trim(),area:gArea.value,duration:gDuration.value,notes:gNotes.value.trim(),status:'PENDING',time:new Date().toLocaleString()});saveV11();guideResultV11.innerHTML='<div class="result success">Guide request submitted for assignment.</div>';renderGuidesV11();}
+
 function renderGuidesV11(){const el=document.getElementById('guideListV11');if(!el)return;el.innerHTML=guideRequests.length?guideRequests.map(g=>`<div class="application"><b>${g.name}</b> — ${g.status}<br>📞 ${g.phone}<br>📍 ${g.area} • ${g.duration}<br>${g.notes||''}${g.status==='PENDING'?`<button class="green" onclick="assignGuideV11('${g.id}')">ASSIGN GUIDE</button>`:''}</div>`).join(''):'No guide requests yet.';}
 function assignGuideV11(id){const g=guideRequests.find(x=>x.id===id);if(g){g.status='ASSIGNED';saveV11();renderGuidesV11();}}
-const _ownerV11=renderOwnerDashboard;renderOwnerDashboard=function(){_ownerV11();setTimeout(renderGuidesV11,30);};
-
 /* Ensure new approvals are compatible with all existing login versions */
-const _approveV11=approveVolunteer;approveVolunteer=function(id){_approveV11(id);const a=volunteerApplications.find(x=>x.id===id);if(a){a.tempId=a.volunteerId||a.tempId;a.firstLogin=true;a.mustChangePassword=true;saveV4();renderVolunteerApplicationsAdmin();}};
 </script>
 
 
@@ -3439,61 +3425,6 @@ function v13Escape(v){return String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','
 function v13Maps(lat,lon){return 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(lat+','+lon);}
 
 /* Replace old safety QR with a universally readable JSON payload containing profile + latest GPS. */
-showSafetyRegistration=function(){
-  if(!currentUser){
-    safetyRegistration.innerHTML='<div class="result danger">🔒 Please login or create an account first.</div>';
-    return;
-  }
-  const render=()=>{
-    const lat=userLatitude, lon=userLongitude;
-    const payload={
-      type:'KUMBH_RAKSHAK_SAFETY',
-      safetyId:'SAFETY-'+currentUser.id,
-      name:currentUser.name||'',
-      phone:currentUser.phone||'',
-      location:(lat!==null&&lon!==null)?{lat:+Number(lat).toFixed(6),lon:+Number(lon).toFixed(6)}:null
-    };
-    const text=JSON.stringify(payload);
-    localStorage.setItem('kumbhV13SafetyPayload',text);
-    safetyRegistration.innerHTML=`<div class="result success">
-      <b>🛡️ Universal Safety QR ready</b><br>
-      <small>Scan this QR with any standard QR scanner to read the saved name, contact and location.</small>
-      <div id="mySafetyQR" class="v13-qrbox"></div>
-      <div class="v13-row">
-        <button class="blue" onclick="v13ShareSafetyProfile()">📤 SHARE SAFETY DETAILS</button>
-        <button class="gray" onclick="v13RefreshSafetyQR()">📍 REFRESH LOCATION & QR</button>
-      </div>
-      <div id="v13QRStatus" class="map-note"></div>
-    </div>`;
-
-    const el=document.getElementById('mySafetyQR');
-    const status=document.getElementById('v13QRStatus');
-    try{
-      if(typeof QRCode==='undefined') throw new Error('QR library did not load');
-      el.innerHTML='';
-      new QRCode(el,{
-        text:text,
-        width:200,
-        height:200,
-        colorDark:'#000000',
-        colorLight:'#ffffff',
-        correctLevel:QRCode.CorrectLevel ? QRCode.CorrectLevel.M : 0
-      });
-      status.textContent='✅ QR code generated successfully.';
-    }catch(err){
-      status.innerHTML='<span style="color:#b00020">⚠️ QR could not be generated: '+v13Escape(err.message)+'</span>';
-    }
-  };
-  if(userLatitude===null||userLongitude===null){
-    if(navigator.geolocation){
-      navigator.geolocation.getCurrentPosition(
-        pos=>{userLatitude=pos.coords.latitude;userLongitude=pos.coords.longitude;render();},
-        ()=>render(),
-        {enableHighAccuracy:true,timeout:12000,maximumAge:5000}
-      );
-    }else render();
-  }else render();
-};
 function v13RefreshSafetyQR(){
   if(!navigator.geolocation){showSafetyRegistration();return;}
   navigator.geolocation.getCurrentPosition(
@@ -3510,15 +3441,6 @@ function v13ShareSafetyProfile(){
 }
 /* Scanner also understands the universal JSON QR. */
 const v13OldHandleQR=handleQR;
-handleQR=function(data){
-  try{const p=JSON.parse(data);if(p&&p.type==='KUMBH_RAKSHAK_SAFETY'){
-    const loc=p.location?`<br>📍 Location: <a href="https://www.google.com/maps?q=${p.location.lat},${p.location.lon}" target="_blank">Open in Google Maps</a>`:'<br>📍 Location unavailable';
-    qrResult.innerHTML=`<div class="result success"><h3>🛡️ Safety Profile</h3><b>${v13Escape(p.name)}</b><br>📞 <a href="tel:${encodeURIComponent(p.phone||'')}">${v13Escape(p.phone||'Not available')}</a>${loc}<br><small>Safety ID: ${v13Escape(p.safetyId||'')}</small></div>`;
-    return;
-  }}catch(e){}
-  return v13OldHandleQR(data);
-};
-
 function v13PublicBusCard(){
   const p=document.getElementById('publicPage');if(!p||document.getElementById('v13PublicBusCard'))return;
   const card=document.createElement('div');card.id='v13PublicBusCard';card.className='card v13-card';card.innerHTML='<h2>🚌 Bus Timetable</h2><p>View volunteer-updated bus routes and departure times.</p><button class="blue" onclick="v13RenderBusTimetable()">🗓️ VIEW BUS TIMETABLE</button><div id="v13BusTimetableResult"></div>';const fb=p.querySelector('#feedbackText')?.closest('.card');p.insertBefore(card,fb||null);
@@ -3951,427 +3873,28 @@ function injectV12Volunteer(){
    BUS ROUTE DETECTION
 ===================================================== */
 
-function v12FindBusRoute(
-  lat,
-  lon
-){
 
-  let selected =
-  null;
-
-  let minimum =
-  Infinity;
-
-
-  v12BusRoutes.forEach(route=>{
-
-    route.stops.forEach(stop=>{
-
-      const distance =
-      straightDistance(
-        lat,
-        lon,
-        stop.lat,
-        stop.lon
-      );
-
-
-      if(
-        distance < minimum
-      ){
-
-        minimum =
-        distance;
-
-        selected =
-        route;
-
-      }
-
-    });
-
-  });
-
-
-  /*
-    Within 1 km of a registered route stop.
-  */
-
-  if(
-    minimum <= 1
-  ){
-
-    return selected;
-
-  }
-
-
-  return null;
-
-}
 
 
 /* =====================================================
    GET NEXT STOP
 ===================================================== */
 
-function v12GetNextStop(
-  route,
-  lat,
-  lon
-){
 
-  let closestIndex =
-  0;
-
-  let minimum =
-  Infinity;
-
-
-  route.stops.forEach(
-    (stop,index)=>{
-
-      const distance =
-      straightDistance(
-        lat,
-        lon,
-        stop.lat,
-        stop.lon
-      );
-
-
-      if(
-        distance < minimum
-      ){
-
-        minimum =
-        distance;
-
-        closestIndex =
-        index;
-
-      }
-
-    }
-  );
-
-
-  const nextIndex =
-  Math.min(
-    closestIndex + 1,
-    route.stops.length - 1
-  );
-
-
-  return route.stops[nextIndex];
-
-}
 
 
 /* =====================================================
    START BUS TRACKING
 ===================================================== */
 
-function v12StartBusTracking(){
 
-  if(
-    !navigator.geolocation
-  ){
-
-    alert(
-      'GPS is not supported.'
-    );
-
-    return;
-
-  }
-
-
-  if(
-    v12BusWatch !== null
-  ){
-
-    navigator.geolocation.clearWatch(
-      v12BusWatch
-    );
-
-  }
-
-
-  document.getElementById(
-    'v12BusResult'
-  ).innerHTML=`
-
-    <div class="result info">
-
-      📡 Starting live GPS tracking...
-
-    </div>
-
-  `;
-
-
-  v12BusWatch =
-  navigator.geolocation.watchPosition(
-
-    position=>{
-
-      const lat =
-      position.coords.latitude;
-
-      const lon =
-      position.coords.longitude;
-
-
-      userLatitude =
-      lat;
-
-      userLongitude =
-      lon;
-
-
-      const route =
-      v12FindBusRoute(
-        lat,
-        lon
-      );
-
-
-      if(!route){
-
-        document.getElementById(
-          'v12BusResult'
-        ).innerHTML=`
-
-          <div class="result warning">
-
-            🚶 No registered bus route
-            detected nearby.
-
-            <br><br>
-
-            GPS tracking is still active.
-
-          </div>
-
-        `;
-
-        return;
-
-      }
-
-
-      const nextStop =
-      v12GetNextStop(
-        route,
-        lat,
-        lon
-      );
-
-
-      const distance =
-      straightDistance(
-        lat,
-        lon,
-        nextStop.lat,
-        nextStop.lon
-      );
-
-
-      /*
-        Default estimated speed:
-        20 km/h
-      */
-
-      const speed =
-      20;
-
-
-      const eta =
-      Math.max(
-        1,
-        Math.round(
-          distance /
-          speed *
-          60
-        )
-      );
-
-
-      v12BusReports.push({
-
-        id:
-        'BUS'+Date.now(),
-
-        routeId:
-        route.id,
-
-        lat,
-
-        lon,
-
-        time:
-        Date.now()
-
-      });
-
-
-      if(
-        v12BusReports.length > 100
-      ){
-
-        v12BusReports =
-        v12BusReports.slice(-100);
-
-      }
-
-
-      saveV12();
-
-
-      document.getElementById(
-        'v12BusResult'
-      ).innerHTML=`
-
-        <div
-          class="
-          bus-v12-card
-          bus-v12-live">
-
-          <h3>
-
-            🚌 ${route.number}
-
-          </h3>
-
-
-          <b>
-
-            ${route.name}
-
-          </b>
-
-
-          <br><br>
-
-
-          <b>
-            ⏭ Next Stop:
-          </b>
-
-          ${nextStop.name}
-
-
-          <br>
-
-
-          <b>
-            📏 Distance:
-          </b>
-
-          ${formatKm(distance)}
-
-
-          <br>
-
-
-          <b>
-            ⏱ Estimated Arrival:
-          </b>
-
-          ${eta} minutes
-
-
-          <br><br>
-
-
-          <span
-            class="
-            v12-badge
-            v12-done">
-
-            ● LIVE GPS ACTIVE
-
-          </span>
-
-        </div>
-
-      `;
-
-
-    },
-
-
-    error=>{
-
-      const message =
-        window.location.protocol === 'file:'
-        ? '⚠️ GPS needs a secure/local web server. In VS Code use Live Server, then open the http://localhost address.'
-        : (
-            error && error.message
-            ? '❌ GPS error: ' + error.message
-            : '❌ GPS permission required.'
-          );
-
-      document.getElementById(
-        'v12BusResult'
-      ).innerHTML=`
-
-        <div class="result danger">
-
-          ${message}
-
-        </div>
-
-      `;
-
-    },
-
-
-    {
-      enableHighAccuracy:true,
-      maximumAge:3000,
-      timeout:20000
-    }
-
-  );
-
-}
 
 
 /* =====================================================
    STOP BUS TRACKING
 ===================================================== */
 
-function v12StopBusTracking(){
 
-  if(
-    v12BusWatch !== null
-  ){
-
-    navigator.geolocation.clearWatch(
-      v12BusWatch
-    );
-
-    v12BusWatch =
-    null;
-
-  }
-
-
-  document.getElementById(
-    'v12BusResult'
-  ).innerHTML=`
-
-    <div class="result warning">
-
-      ⏹ Bus tracking stopped.
-
-    </div>
-
-  `;
-
-}
 
 
 /* =====================================================
@@ -4476,37 +3999,6 @@ function v12CheckCleaning(
 
 const v12OldReportCrowd =
 window.reportCrowd;
-
-
-window.reportCrowd =
-function(level){
-
-  if(
-    typeof v12OldReportCrowd ===
-    'function'
-  ){
-
-    v12OldReportCrowd(level);
-
-  }
-
-
-  const p =
-  nearestKumbhPlace();
-
-
-  setTimeout(
-    ()=>{
-
-      v12CheckCleaning(
-        p.name
-      );
-
-    },
-    100
-  );
-
-};
 
 
 /* =====================================================
@@ -5512,38 +5004,6 @@ const v12OriginalOpenPage =
 openPage;
 
 
-openPage =
-function(id){
-
-  v12OriginalOpenPage(id);
-
-
-  setTimeout(
-    ()=>{
-
-      if(
-        id === 'volunteerPage'
-      ){
-
-        injectV12Volunteer();
-
-      }
-
-
-      if(
-        id === 'publicPage'
-      ){
-
-        injectV12Public();
-
-      }
-
-    },
-    100
-  );
-
-};
-
 </script>
 <script>
 
@@ -6381,31 +5841,6 @@ const restoreBusOriginalOpenPage =
 window.openPage;
 
 
-window.openPage =
-function(id){
-
-  if(
-    typeof restoreBusOriginalOpenPage ===
-    'function'
-  ){
-
-    restoreBusOriginalOpenPage(id);
-
-  }
-
-
-  if(
-    id === 'publicPage'
-  ){
-
-    setTimeout(
-      restoreBusTrackingCard,
-      200
-    );
-
-  }
-
-};
 /* =========================================================
    BUS TRACKING ENGINE
 ========================================================= */
@@ -6909,7 +6344,7 @@ function v12StopBusTracking() {
     return u.toString();
   }
   function safetyURL(){
-    const c=(window.emergencyContacts&&currentUser)?(emergencyContacts[currentUser.id]||[]):[];
+    const c=(emergencyContacts&&currentUser)?(emergencyContacts[currentUser.id]||[]):[];
     const q=new URLSearchParams();
     q.set('safety','1');
     q.set('id','SAFETY-'+(currentUser.id||''));
@@ -6920,46 +6355,7 @@ function v12StopBusTracking() {
     return publicBase()+'?'+q.toString();
   }
 
-  window.showSafetyRegistration=function(){
-    if(!currentUser){
-      safetyRegistration.innerHTML='<div class="result danger">🔒 Please login or create an account first.</div>';return;
-    }
-    const render=function(){
-      const link=safetyURL();
-      localStorage.setItem('kumbhSafetyProfileURL',link);
-      safetyRegistration.innerHTML=`<div class="result success">
-        <b>🛡️ Safety QR ready</b><br>
-        <small>Scan this QR to open the Kumbh Rakshak Safety Profile with contact, emergency contacts and optional live-location directions.</small>
-        <div id="mySafetyQR" class="v14-single-qr"></div>
-        <div class="v13-row">
-          <button class="blue" onclick="v14ShareSafetyProfile()">📤 SHARE SAFETY DETAILS</button>
-          <button class="gray" onclick="v14RefreshSafetyQR()">📍 REFRESH LOCATION & QR</button>
-        </div>
-        <div id="v14QRStatus" class="map-note"></div>
-      </div>`;
-      const host=document.getElementById('mySafetyQR'),status=document.getElementById('v14QRStatus');
-      try{
-        if(typeof QRCode==='undefined') throw new Error('QR library did not load');
-        const tmp=document.createElement('div');
-        new QRCode(tmp,{text:link,width:220,height:220,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel?QRCode.CorrectLevel.M:0});
-        setTimeout(function(){
-          const chosen=tmp.querySelector('img')||tmp.querySelector('canvas');
-          host.innerHTML='';
-          if(!chosen) throw new Error('QR image was not created');
-          host.appendChild(chosen.cloneNode(true));
-          status.textContent='✅ One QR code generated successfully.';
-        },50);
-      }catch(err){status.textContent='⚠️ QR could not be generated: '+err.message;}
-    };
-    if(userLatitude===null||userLongitude===null){
-      if(navigator.geolocation) navigator.geolocation.getCurrentPosition(
-        pos=>{userLatitude=pos.coords.latitude;userLongitude=pos.coords.longitude;render();},
-        ()=>render(),{enableHighAccuracy:true,timeout:12000,maximumAge:5000}
-      ); else render();
-    } else render();
-  };
-
-  window.v14RefreshSafetyQR=function(){
+    window.v14RefreshSafetyQR=function(){
     if(!navigator.geolocation){showSafetyRegistration();return;}
     navigator.geolocation.getCurrentPosition(
       p=>{userLatitude=p.coords.latitude;userLongitude=p.coords.longitude;showSafetyRegistration();},
@@ -7066,30 +6462,7 @@ function v12StopBusTracking() {
   window.v15ToggleParking=function(){parkingExpanded=!parkingExpanded;renderParking();};
 
   /* ---------- 3) VOLUNTEER PARKING: EV CHARGER AVAILABLE OPTION ---------- */
-  window.showAddLocation=function(){
-    volunteerContent.innerHTML=`<div class="card">
-      <h2>➕ Add / Update Location</h2>
-      <select id="newType" onchange="v15ParkingTypeChanged()">
-        <option value="bus">🚌 Bus Stop</option>
-        <option value="auto">🛺 Auto / Rickshaw Stand</option>
-        <option value="water">💧 Drinking Water</option>
-        <option value="toilet">🚻 Toilet</option>
-        <option value="police">🚔 Police Help Centre</option>
-        <option value="hospital">🏥 Medical / Hospital</option>
-        <option value="charging">🔋 Phone Charging Station</option>
-        <option value="parking">🅿️ Parking</option>
-      </select>
-      <div id="v15EvRow" class="v15-ev-row"><label><input id="newEvAvailable" type="checkbox"> 🔋 EV CHARGER AVAILABLE AT THIS PARKING</label></div>
-      <input id="newName" placeholder="Location Name">
-      <input id="newAddress" placeholder="Address">
-      <input id="newLat" type="number" step="any" placeholder="Latitude">
-      <input id="newLon" type="number" step="any" placeholder="Longitude">
-      <input id="newCharge" placeholder="Charge / Free">
-      <button class="blue" onclick="v12UseGPS()">📍 USE MY CURRENT GPS</button>
-      <button class="green" onclick="v15SaveLocation()">💾 SAVE LOCATION</button>
-    </div>`;
-  };
-  window.v15ParkingTypeChanged=function(){
+    window.v15ParkingTypeChanged=function(){
     const row=document.getElementById('v15EvRow');
     if(row) row.classList.toggle('show',document.getElementById('newType').value==='parking');
   };
@@ -7110,7 +6483,7 @@ function v12StopBusTracking() {
 
   /* ---------- 4) SAFETY QR: compact HTTPS-style URL + larger, easier scan ---------- */
   function compactSafetyURL(){
-    const contacts=(window.emergencyContacts&&currentUser)?(emergencyContacts[currentUser.id]||[]):[];
+    const contacts=(emergencyContacts&&currentUser)?(emergencyContacts[currentUser.id]||[]):[];
     const q=new URLSearchParams();
     q.set('safety','1');
     q.set('id','SAFETY-'+(currentUser?.id||''));
@@ -7128,59 +6501,9 @@ function v12StopBusTracking() {
     return base+'?'+q.toString();
   }
 
-  window.showSafetyRegistration=function(){
-    if(!currentUser){safetyRegistration.innerHTML='<div class="result danger">🔒 Please login or create an account first.</div>';return;}
-    const render=()=>{
-      const link=compactSafetyURL();
-      localStorage.setItem('kumbhSafetyProfileURL',link);
-      safetyRegistration.innerHTML=`<div class="result success">
-        <b>🛡️ Safety QR ready</b><br>
-        <small>Scan this QR to open the Kumbh Rakshak Safety Profile.</small>
-        <div id="mySafetyQR" class="v14-single-qr"></div>
-        <div class="v13-row">
-          <button class="blue" onclick="v14ShareSafetyProfile()">📤 SHARE SAFETY DETAILS</button>
-          <button class="gray" onclick="v14RefreshSafetyQR()">📍 REFRESH LOCATION & QR</button>
-        </div>
-        <div id="v14QRStatus" class="map-note"></div>
-      </div>`;
-      const host=document.getElementById('mySafetyQR'),status=document.getElementById('v14QRStatus');
-      try{
-        if(typeof QRCode==='undefined') throw new Error('QR library did not load');
-        host.innerHTML='';
-        const tmp=document.createElement('div');
-        new QRCode(tmp,{text:link,width:320,height:320,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel?QRCode.CorrectLevel.L:1});
-        setTimeout(()=>{
-          const chosen=tmp.querySelector('img')||tmp.querySelector('canvas');
-          if(!chosen){status.textContent='⚠️ QR could not be generated.';return;}
-          host.appendChild(chosen.cloneNode(true));
-          status.textContent='✅ One high-clarity QR code generated successfully.';
-        },80);
-      }catch(e){status.textContent='⚠️ QR could not be generated: '+e.message;}
-    };
-    if(userLatitude===null||userLongitude===null){
-      if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=>{userLatitude=p.coords.latitude;userLongitude=p.coords.longitude;render();},render,{enableHighAccuracy:true,timeout:12000,maximumAge:5000});
-      else render();
-    }else render();
-  };
-
-  /* In-app scanner also understands a scanned Safety Profile URL. */
+    /* In-app scanner also understands a scanned Safety Profile URL. */
   const previousHandle=window.handleQR;
-  window.handleQR=function(data){
-    try{
-      const u=new URL(data);
-      const q=u.searchParams;
-      if(q.get('safety')==='1'){
-        const name=q.get('name')||'Safety Band Owner',phone=q.get('phone')||'Not available';
-        const contacts=[1,2].map(i=>({n:q.get('ec'+i+'n'),p:q.get('ec'+i+'p')})).filter(x=>x.n||x.p);
-        const lat=q.get('lat'),lon=q.get('lon');
-        qrResult.innerHTML=`<div class="result success"><h3>🛡️ Safety Profile</h3><b>👤 ${name}</b><br>📞 <a href="tel:${phone}">${phone}</a><br>${contacts.length?'<h4>🚨 Emergency Contacts</h4>'+contacts.map(x=>`${x.n||'Contact'}: <a href="tel:${x.p||''}">${x.p||'Not available'}</a>`).join('<br>'):''}${lat&&lon?`<br><br><button class="green" onclick="window.open('https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}','_blank')">🧭 GET DIRECTIONS TO OWNER</button>`:''}</div>`;
-        return;
-      }
-    }catch(e){}
-    return previousHandle(data);
-  };
-
-  /* Refresh public cards after this final override is loaded. */
+    /* Refresh public cards after this final override is loaded. */
   setTimeout(()=>{try{renderCharging();renderParking();moveTimetable();}catch(e){}},900);
 })();
 </script>
@@ -7567,37 +6890,7 @@ function kcmRender(){
 
 // Make crowd reports location-aware.
 const kcmOldReport=window.reportCrowd;
-window.reportCrowd=function(level){
- try{
-   if(typeof userLatitude==='undefined'||userLatitude===null){
-     alert('Please turn on GET MY EXACT LOCATION before reporting crowd.');
-     if(typeof getLocation==='function')getLocation();
-     return;
-   }
-   if(typeof crowdReports!=='undefined'){
-     const place=(typeof nearestKumbhPlace==='function')?nearestKumbhPlace():KCM_PLACES[0];
-     crowdReports.push({
-       place:place.name,level,timestamp:Date.now(),
-       user:(typeof currentUser!=='undefined'&&currentUser?.id)||'GUEST',
-       lat:Number(userLatitude),lon:Number(userLongitude)
-     });
-     if(typeof save==='function')save();
-   }
-   kcmCaptureGPS();kcmRender();
-   if(typeof renderCrowdQuestion==='function')renderCrowdQuestion();
-   if(typeof renderCrowdSummary==='function')renderCrowdSummary();
- }catch(e){
-   console.warn('Crowd report failed',e);
-   if(typeof kcmOldReport==='function')kcmOldReport(level);
- }
-};
-
 const kcmOldStart=window.startLiveLocation;
-window.startLiveLocation=function(){
- if(typeof kcmOldStart==='function')kcmOldStart();
- setTimeout(kcmRender,900);
-};
-
 function kcmTick(){
  if(document.getElementById('kumbhLiveCrowdMap'))kcmRender();
 }
@@ -8771,9 +8064,10 @@ body>footer,footer{display:none!important}
     const cards=[...page.children].filter(x=>x.classList && x.classList.contains('card'));
     if(!cards.length)return;
 
+    const card=cards[0];
+    const original=card.innerHTML;
+
     if(type==='user'){
-      const card=cards[0];
-      const original=card.innerHTML;
       const visual=makeEl('div','auth-visual',`
         <div class="auth-glow"></div>
         <div class="auth-brand">ॐ</div>
@@ -8820,37 +8114,21 @@ body>footer,footer{display:none!important}
     }
   }
 
-  // Wrap existing render function without replacing any business logic.
-  const oldRenderPublic=window.renderPublic;
-  window.renderPublic=function(){
-    ensurePublicPremiumShell();
-    if(typeof oldRenderPublic==='function')oldRenderPublic.apply(this,arguments);
-    ensurePublicPremiumShell();
-    updateKpis();
-  };
-
-  const oldOpenPage=window.openPage;
-  window.openPage=function(id){
-    if(typeof oldOpenPage==='function')oldOpenPage.apply(this,arguments);
-    if(id==='publicPage'){
-      ensurePublicPremiumShell();
-      updateKpis();
-    }
-    if(id==='userLoginPage')ensureLoginPremium('userLoginPage','user');
-    if(id==='volunteerLoginPage')ensureLoginPremium('volunteerLoginPage','volunteer');
-    if(id==='ownerLoginPage')ensureLoginPremium('ownerLoginPage','admin');
-  };
+  // Expose the premium shell helpers for the later layout-repair scripts.
+  window.ensurePublicPremiumShell=ensurePublicPremiumShell;
+  window.ensureLoginPremium=ensureLoginPremium;
+  window.updateKpis=updateKpis;
 
   // Run after the original application has initialized.
-  function boot(){
+  function bootPremiumShell(){
     ensurePublicPremiumShell();
     ensureLoginPremium('userLoginPage','user');
     ensureLoginPremium('volunteerLoginPage','volunteer');
     ensureLoginPremium('ownerLoginPage','admin');
     updateKpis();
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(boot,100));
-  else setTimeout(boot,100);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(bootPremiumShell,100));
+  else setTimeout(bootPremiumShell,100);
 
 })();
 </script>
@@ -9477,15 +8755,15 @@ body:has(#publicPage.active) .container{
     });
   }
 
-  function run(){
+  function runPremiumTagging(){
     tagPremiumFeatures();
     setTimeout(tagPremiumFeatures,120);
     setTimeout(tagPremiumFeatures,500);
   }
   if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',run);
+    document.addEventListener('DOMContentLoaded',runPremiumTagging);
   }else{
-    run();
+    runPremiumTagging();
   }
   new MutationObserver(tagPremiumFeatures).observe(document.body,{childList:true,subtree:true});
 })();
@@ -9527,16 +8805,16 @@ body:has(#publicPage.active) .container{
     }
   }
 
-  function run(){
+  function runReferenceClassification(){
     classifyPublicCards();
     document.body.classList.add('kr-inner-active');
   }
 
   document.addEventListener('DOMContentLoaded',()=>{
-    setTimeout(run,80);
-    setTimeout(run,500);
-    setTimeout(run,1300);
-    setTimeout(run,2500);
+    setTimeout(runReferenceClassification,80);
+    setTimeout(runReferenceClassification,500);
+    setTimeout(runReferenceClassification,1300);
+    setTimeout(runReferenceClassification,2500);
   });
 
   const observer=new MutationObserver(()=>{
@@ -9560,7 +8838,6 @@ body:has(#publicPage.active) .container{
       <button class="kr-qitem kr-q-red" onclick="getLocation()"><i>📍</i><span>My Location</span></button>
       <button class="kr-qitem kr-q-blue" onclick="navigateFromHome('weatherV11')"><i>☀️</i><span>Weather</span></button>
       <button class="kr-qitem kr-q-orange" onclick="navigateFromHome('v12BusTrackingCard')"><i>🚌</i><span>Bus Tracking</span></button>
-      <button class="kr-qitem kr-q-red" onclick="navigateFromHome('nearbyServicesCard')"><i>🏥</i><span>Nearby Services</span></button>
       <button class="kr-qitem kr-q-green" onclick="navigateFromHome('chargingCard')"><i>🔋</i><span>Charging</span></button>
       <button class="kr-qitem kr-q-blue" onclick="navigateFromHome('parkingStations')"><i>🅿️</i><span>Parking</span></button>
       <button class="kr-qitem kr-q-purple" onclick="startScanner()"><i>▦</i><span>QR Scanner</span></button>
@@ -9572,9 +8849,9 @@ body:has(#publicPage.active) .container{
     </div>`;
     head.appendChild(quick);
   }
-  function run(){addQuickServices();setTimeout(addQuickServices,500)}
-  document.addEventListener('DOMContentLoaded',run);
-  new MutationObserver(run).observe(document.body,{subtree:true,childList:true});
+  function runQuickServices(){addQuickServices();setTimeout(addQuickServices,500)}
+  document.addEventListener('DOMContentLoaded',runQuickServices);
+  new MutationObserver(runQuickServices).observe(document.body,{subtree:true,childList:true});
 })();
 </script>
 
@@ -9587,10 +8864,19 @@ body:has(#publicPage.active) .container{
     const cards=[...page.querySelectorAll('.public-dashboard-grid > .card')];
     const card=cards.find(c=>(c.innerText||'').toLowerCase().includes(titleMatch.toLowerCase()));
     if(!card || card.dataset.krRefBuilt) return;
+
     card.dataset.krRefBuilt='1';
     card.classList.add('kr-ref-card',className);
+
+    // Preserve result containers required by the original application.
+    const ids=['v12BusResult','guideResultV11','nearestResult','v13BusTimetableResult','expertV11'];
+    const preserved=ids
+      .map(id=>document.getElementById(id))
+      .filter(el=>el && card.contains(el));
+
     const old=card.innerHTML;
     card.innerHTML='';
+
     const inner=document.createElement('div');
     inner.className='kr-ref-inner';
     inner.innerHTML=`
@@ -9599,7 +8885,16 @@ body:has(#publicPage.active) .container{
         <div><h2>${titleMatch}</h2><p>${subtitle}</p></div>
         <button class="kr-ref-arrow" aria-label="Open ${titleMatch}">→</button>
       </div>`;
+
     build(inner,old);
+
+    // Re-attach only the functional result containers that the original
+    // handlers write into. This prevents null.innerHTML errors.
+    preserved.forEach(el=>{
+      el.style.display='';
+      inner.appendChild(el);
+    });
+
     card.appendChild(inner);
   }
 
@@ -9617,7 +8912,7 @@ body:has(#publicPage.active) .container{
           <div class="kr-ref-list-row"><span class="kr-ref-list-ico">💧</span><span>Stay hydrated and carry drinking water.</span></div>
           <div class="kr-ref-list-row"><span class="kr-ref-list-ico">⚠️</span><span>Follow official routes and announcements.</span></div>
         </div>
-        <button class="kr-ref-primary orange" onclick="showSafetyGuidanceV11?.()">📖 &nbsp; VIEW MORE SAFETY GUIDANCE &nbsp; →</button>`);
+        <div id="expertV11" class="kr-ref-result"></div><button class="kr-ref-primary orange" onclick="showSafetyGuidanceV11()">📖 &nbsp; VIEW MORE SAFETY GUIDANCE &nbsp; →</button>`);
     });
 
     makeCard('kr-ref-bus','Bus Timetable','🚌','View volunteer-updated bus routes and departure times.',(inner)=>{
@@ -9627,7 +8922,7 @@ body:has(#publicPage.active) .container{
           <div class="kr-ref-stat">🕐<b>12:15 PM</b><span>Next Departure</span></div>
           <div class="kr-ref-stat">👥<b>200+</b><span>Buses</span></div>
         </div>
-        <button class="kr-ref-primary blue" onclick="showBusTimetableV13?.(); showBusTimetableV11?.()">▦ &nbsp; VIEW BUS TIMETABLE &nbsp; →</button>`);
+        <div id="v13BusTimetableResult" class="kr-ref-result"></div><button class="kr-ref-primary blue" onclick="v13RenderBusTimetable()">▦ &nbsp; VIEW BUS TIMETABLE &nbsp; →</button>`);
     });
 
     makeCard('kr-ref-livebus','Live Bus Tracking','🚌','Track your bus in real-time and know the estimated time to reach your stop.',(inner)=>{
@@ -9637,7 +8932,7 @@ body:has(#publicPage.active) .container{
           <button class="blue" onclick="v12StartBusTracking()">📡 START BUS TRACKING</button>
           <button onclick="v12StopBusTracking()">■ STOP TRACKING</button>
         </div>
-        <div class="result info">🚌 Bus tracking is currently off.</div>`);
+        <div id="v12BusResult" class="result info">🚌 Bus tracking is currently off.</div>`);
     });
 
     makeCard('kr-ref-guide','Hire a Local Guide','🧭','Request a verified guide for ghats, temples, routes and nearby facilities.',(inner)=>{
@@ -9648,20 +8943,12 @@ body:has(#publicPage.active) .container{
           <div class="kr-guide-copy-row"><span>👨‍👩‍👧</span><div><b>Support for Elderly & Families</b><small>Travel with confidence and ease.</small></div></div>
         </div>
         <div class="kr-guide-person"></div>
-        <button class="kr-ref-primary purple" onclick="showGuideV11()">🧑‍✈️ &nbsp; REQUEST A GUIDE &nbsp; →</button>`);
+        <div id="guideResultV11" class="kr-ref-result"></div><button class="kr-ref-primary purple" onclick="showGuideV11()">🧑‍✈️ &nbsp; REQUEST A GUIDE &nbsp; →</button>`);
     });
 
-    makeCard('kr-ref-services','Nearby Services','🗺️','Quick access to essential services around you.',(inner)=>{
-      inner.insertAdjacentHTML('beforeend',`
-        <div class="kr-service-grid">
-          <button class="kr-service-tile" onclick="findService('police')"><span class="ico">👮</span><span><b>Nearest Police</b><small>3 nearby</small></span><strong>›</strong></button>
-          <button class="kr-service-tile" onclick="findService('hospital')"><span class="ico">🏥</span><span><b>Hospital</b><small>5 nearby</small></span><strong>›</strong></button>
-          <button class="kr-service-tile" onclick="findService('bus')"><span class="ico">🚌</span><span><b>Bus Stand</b><small>8 nearby</small></span><strong>›</strong></button>
-          <button class="kr-service-tile" onclick="findService('auto')"><span class="ico">🛺</span><span><b>Auto / Rickshaw</b><small>6 nearby</small></span><strong>›</strong></button>
-          <button class="kr-service-tile" onclick="findService('toilet')"><span class="ico">🚻</span><span><b>Toilet</b><small>8 nearby</small></span><strong>›</strong></button>
-          <button class="kr-service-tile" onclick="findService('water')"><span class="ico">💧</span><span><b>Drinking Water</b><small>10 nearby</small></span><strong>›</strong></button>
-        </div>`);
-    });
+    /* Nearby Services: keep the original functional card only.
+       The reference redesign previously duplicated this feature visually. */
+
 
     // Group the five reference cards into the same 3 + 2 visual rows.
     const safety=grid.querySelector('.kr-ref-safety');
@@ -9695,14 +8982,14 @@ body:has(#publicPage.active) .container{
   }
   function stationData(){
     return {
-      charging: Array.isArray(window.chargingStations)?window.chargingStations:[],
-      parking: Array.isArray(window.parkingStations)?window.parkingStations:[]
+      charging: Array.isArray(chargingStations)?chargingStations:[],
+      parking: Array.isArray(parkingStations)?parkingStations:[]
     };
   }
   function safeDist(a){
     try{
-      if(window.userLatitude==null || window.userLongitude==null) return null;
-      return window.formatKm(window.straightDistance(window.userLatitude,window.userLongitude,a.lat,a.lon));
+      if(userLatitude==null || userLongitude==null) return null;
+      return window.formatKm(window.straightDistance(userLatitude,userLongitude,a.lat,a.lon));
     }catch(e){return null}
   }
   function stationPhotoClass(type){ return type==='parking'?'kr-station-photo kr-parking-photo':'kr-station-photo'; }
@@ -9781,7 +9068,7 @@ body:has(#publicPage.active) .container{
   }
 
   function crowdHTML(){
-    let reports=Array.isArray(window.crowdReports)?window.crowdReports:[];
+    let reports=Array.isArray(crowdReports)?crowdReports:[];
     let place={name:'Ramkund'};
     try{ place=window.nearestKumbhPlace?window.nearestKumbhPlace():place }catch(e){}
     const current=reports.filter(r=>r.place===place.name);
@@ -9851,11 +9138,11 @@ body:has(#publicPage.active) .container{
 
     serviceSection.innerHTML=`
       <div class="kr-premium-card kr-charging">
-        <div class="kr-p-head"><div class="kr-p-title"><div class="kr-p-icon">🔋</div><div><h2>Phone Charging Stations</h2><p>Find nearby charging points, check availability, route and charges.</p></div></div><button class="kr-map-btn" onclick="navigateFromHome('mapPage')">🗺️ View on Map&nbsp; →</button></div>
+        <div class="kr-p-head"><div class="kr-p-title"><div class="kr-p-icon">🔋</div><div><h2>Phone Charging Stations</h2><p>Find nearby charging points, check availability, route and charges.</p></div></div><button class="kr-map-btn" onclick="navigateFromHome('locationCard')">🗺️ View on Map&nbsp; →</button></div>
         <div id="krChargingBody">${chargingHTML()}</div>
       </div>
       <div class="kr-premium-card kr-parking">
-        <div class="kr-p-head"><div class="kr-p-title"><div class="kr-p-icon">🅿️</div><div><h2>Car & Bike Parking</h2><p>Check real-time availability for car and bike parking spaces.</p></div></div><button class="kr-map-btn" onclick="navigateFromHome('mapPage')">🗺️ View on Map&nbsp; →</button></div>
+        <div class="kr-p-head"><div class="kr-p-title"><div class="kr-p-icon">🅿️</div><div><h2>Car & Bike Parking</h2><p>Check real-time availability for car and bike parking spaces.</p></div></div><button class="kr-map-btn" onclick="navigateFromHome('locationCard')">🗺️ View on Map&nbsp; →</button></div>
         <div id="krParkingBody">${parkingHTML()}</div>
       </div>`;
 
@@ -9883,8 +9170,7 @@ body:has(#publicPage.active) .container{
   });
 })();
 </script>
-</body>
-</html><style id="kr-location-weather-reference-v4">
+<style id="kr-location-weather-reference-v4">
 /* LOCATION + WEATHER — visual language based on the supplied reference */
 #publicPage .public-dashboard-grid > #locationCard.kr-lw-location{
   grid-column:span 7!important; min-height:0!important; padding:0!important; overflow:hidden!important;
@@ -9936,7 +9222,7 @@ body:has(#publicPage.active) .container{
     const m=r.textContent.match(/(?:Latitude|Live GPS)\s*:?\s*([\d.-]+)[,\s]+(?:Longitude:)?\s*([\d.-]+)/i);
     const acc=r.textContent.match(/(?:GPS Accuracy|Accuracy)\s*:?\s*±?\s*([\d]+)/i);
     if(!m)return;
-    const coords=document.createElement('div');coords.className='kr-lw-coords';coords.innerHTML='<div><small>Live GPS Coordinates</small><strong>'+m[1]+', '+m[2]+'</strong></div><div><small>Accuracy</small><strong>±'+(acc?acc[1]:'—')+' m</strong></div><div><small>Current Area</small><strong>Mahiarvani, Nashik</strong><span>Maharashtra</span></div>';
+    const coords=document.createElement('div');coords.className='kr-lw-coords';coords.innerHTML='<div><small>Live GPS Coordinates</small><strong>'+m[1]+', '+m[2]+'</strong></div><div><small>Accuracy</small><strong>±'+(acc?acc[1]:'—')+' m</strong></div><div><small>Current Area</small><strong>GPS location detected</strong><span>Area is based on your device location</span></div>';
     r.innerHTML='';r.appendChild(coords);r.dataset.lw4='1';
   }
   function setupWeather(){
@@ -9965,8 +9251,8 @@ body:has(#publicPage.active) .container{
     if(typeof window.getLocation==='function'){const oldGet=window.getLocation;window.getLocation=function(){const r=document.getElementById('locationResult');if(r)r.dataset.lw4='';return oldGet.apply(this,arguments)}}
     if(typeof window.loadWeatherV11==='function'){const oldWeather=window.loadWeatherV11;window.loadWeatherV11=async function(){const r=document.getElementById('weatherResultV11');if(r)r.dataset.lw4='';return oldWeather.apply(this,arguments)}}
   }
-  function boot(){hookUpdates();setupLocation();setupWeather();enhanceLocationResult();enhanceWeather()}
-  document.addEventListener('DOMContentLoaded',()=>{boot();setTimeout(boot,400);setTimeout(boot,1200)});
+  function bootLocationWeather(){hookUpdates();setupLocation();setupWeather();enhanceLocationResult();enhanceWeather()}
+  document.addEventListener('DOMContentLoaded',()=>{bootLocationWeather();setTimeout(bootLocationWeather,400);setTimeout(bootLocationWeather,1200)});
   const mo=new MutationObserver(()=>{setupLocation();setupWeather();enhanceLocationResult();enhanceWeather()});
   mo.observe(document.body,{subtree:true,childList:true});
 })();
@@ -10024,23 +9310,23 @@ body:has(#publicPage.active) .container{
 </style>
 <script id="kr-final-layout-fix-js">
 (function(){
+  'use strict';
   function fixPremiumPlacement(){
     const page=document.getElementById('publicPage');
-    const grid=page && page.querySelector('.public-dashboard-grid');
+    const grid=page?.querySelector('.public-dashboard-grid');
     const crowd=document.getElementById('krPremiumCrowdSection');
     const services=document.getElementById('krPremiumServiceSection');
     if(!grid || !crowd || !services) return;
 
-    /* Move the reference sections to a proper full-width position.
-       Emergency card is a reliable boundary before the lower action cards. */
     const emergency=document.getElementById('emergencyCard');
-    if(emergency && emergency.parentElement===grid){
-      grid.insertBefore(crowd, emergency);
-      grid.insertBefore(services, emergency);
+    const anchor=emergency && emergency.parentElement===grid ? emergency : null;
+
+    if(anchor){
+      if(crowd.parentElement!==grid || crowd.nextElementSibling!==anchor) grid.insertBefore(crowd,anchor);
+      if(services.parentElement!==grid || services.nextElementSibling!==anchor) grid.insertBefore(services,anchor);
     }else{
-      /* Fallback: keep them as full-width grid rows. */
-      grid.appendChild(crowd);
-      grid.appendChild(services);
+      if(crowd.parentElement!==grid) grid.appendChild(crowd);
+      if(services.parentElement!==grid) grid.appendChild(services);
     }
 
     crowd.style.gridColumn='1 / -1';
@@ -10049,18 +9335,2887 @@ body:has(#publicPage.active) .container{
     services.style.width='100%';
   }
 
-  document.addEventListener('DOMContentLoaded',function(){
-    setTimeout(fixPremiumPlacement,300);
-    setTimeout(fixPremiumPlacement,900);
-    setTimeout(fixPremiumPlacement,1800);
-    setTimeout(fixPremiumPlacement,3000);
-  });
+  window.__krFixPremiumPlacement=fixPremiumPlacement;
 
-  const obs=new MutationObserver(function(){
-    if(document.getElementById('krPremiumCrowdSection')){
-      fixPremiumPlacement();
-    }
-  });
-  obs.observe(document.body,{childList:true,subtree:true});
+  function runFinalLayoutRepair(){
+    try{fixPremiumPlacement()}catch(e){console.warn('Kumbh layout repair:',e)}
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(runFinalLayoutRepair,250),{once:true});
+  else setTimeout(runFinalLayoutRepair,250);
 })();
 </script>
+
+
+<style id="kr-reference-dashboard-redesign">
+/* =========================================================
+   KUMBH RAKSHAK 2027 — REFERENCE DASHBOARD REDESIGN
+   Matches the supplied visual direction:
+   pastel cards, 3-card top row, full-width feedback,
+   2-card emergency/volunteer row.
+   Existing functions are preserved.
+   ========================================================= */
+
+body:has(#publicPage.active){
+  background:
+    radial-gradient(circle at 8% 12%,rgba(112,91,255,.08),transparent 24%),
+    radial-gradient(circle at 92% 18%,rgba(52,157,255,.07),transparent 24%),
+    #eef2f8!important;
+}
+
+#publicPage .kr-design-top-row,
+#publicPage .kr-design-bottom-row{
+  width:100%!important;
+  display:grid!important;
+  gap:16px!important;
+  grid-column:1/-1!important;
+  margin:0!important;
+  padding:0!important;
+  align-items:stretch!important;
+}
+
+#publicPage .kr-design-top-row{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+
+#publicPage .kr-design-bottom-row{
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+}
+
+/* Common reference-card appearance */
+#publicPage .kr-design-card{
+  min-width:0!important;
+  min-height:320px!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  position:relative!important;
+  border:1px solid rgba(255,255,255,.86)!important;
+  border-radius:22px!important;
+  box-shadow:0 10px 28px rgba(39,57,86,.09)!important;
+  color:#14233f!important;
+  transition:transform .18s ease,box-shadow .18s ease!important;
+}
+
+#publicPage .kr-design-card:hover{
+  transform:translateY(-2px)!important;
+  box-shadow:0 16px 34px rgba(39,57,86,.13)!important;
+}
+
+#publicPage .kr-design-card:before{
+  display:none!important;
+}
+
+#publicPage .kr-design-inner{
+  min-height:320px;
+  height:100%;
+  padding:20px 20px 18px;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+
+#publicPage .kr-design-inner:after{
+  content:"";
+  position:absolute;
+  width:250px;height:250px;
+  right:-90px;bottom:-120px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.72),transparent 67%);
+  pointer-events:none;
+}
+
+#publicPage .kr-design-head{
+  position:relative;
+  z-index:2;
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+}
+
+#publicPage .kr-design-icon{
+  width:48px;height:48px;
+  flex:0 0 48px;
+  display:grid;
+  place-items:center;
+  border-radius:15px;
+  background:rgba(255,255,255,.78);
+  box-shadow:0 6px 16px rgba(35,54,84,.09);
+  font-size:27px;
+}
+
+#publicPage .kr-design-title{
+  min-width:0;
+  flex:1;
+}
+
+#publicPage .kr-design-title h2{
+  margin:2px 0 5px!important;
+  color:#122448!important;
+  font-size:20px!important;
+  line-height:1.12!important;
+  letter-spacing:-.025em!important;
+}
+
+#publicPage .kr-design-title p{
+  margin:0!important;
+  color:#40577b!important;
+  font-size:12px!important;
+  line-height:1.42!important;
+}
+
+#publicPage .kr-design-arrow{
+  margin:0!important;
+  width:46px!important;height:46px!important;
+  min-height:46px!important;
+  padding:0!important;
+  border-radius:14px!important;
+  background:rgba(255,255,255,.76)!important;
+  color:#172c4f!important;
+  font-size:24px!important;
+  box-shadow:0 6px 15px rgba(35,54,84,.08)!important;
+}
+
+/* Crowd */
+#publicPage #crowdCard.kr-design-card{
+  background:linear-gradient(145deg,#f2efff 0%,#ffffff 53%,#eee8ff 100%)!important;
+}
+
+#publicPage .kr-crowd-inner{
+  min-height:320px;
+  padding:20px;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  background:
+    radial-gradient(circle at 87% 23%,rgba(129,99,255,.24),transparent 27%),
+    linear-gradient(145deg,#f4f0ff,#fff 56%,#ece7ff);
+}
+
+#publicPage .kr-crowd-art{
+  position:absolute;
+  right:-20px;bottom:25px;
+  width:210px;height:145px;
+  opacity:.42;
+  background:
+    linear-gradient(160deg,transparent 0 42%,rgba(111,82,222,.22) 43% 45%,transparent 46%),
+    linear-gradient(20deg,transparent 0 49%,rgba(111,82,222,.18) 50% 52%,transparent 53%),
+    radial-gradient(circle at 50% 30%,rgba(111,82,222,.22) 0 24%,transparent 25%);
+  border-radius:50%;
+}
+
+#publicPage .kr-crowd-location{
+  position:relative;
+  z-index:2;
+  margin-top:20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  padding:10px 12px;
+  border:1px solid rgba(103,83,197,.10);
+  border-radius:13px;
+  background:rgba(255,255,255,.72);
+  color:#172d53;
+  font-size:12px;
+  font-weight:800;
+}
+
+#publicPage .kr-live-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 9px;
+  border-radius:999px;
+  background:#e5f8ee;
+  color:#15914c;
+  font-size:10px;
+  font-weight:900;
+}
+
+#publicPage .kr-live-badge:before{
+  content:"";
+  width:7px;height:7px;border-radius:50%;
+  background:#19b966;
+  box-shadow:0 0 0 4px rgba(25,185,102,.10);
+}
+
+#publicPage .kr-crowd-empty{
+  position:relative;
+  z-index:2;
+  margin-top:15px;
+  padding:22px 16px;
+  border-radius:17px;
+  background:rgba(255,255,255,.68);
+  border:1px solid rgba(255,255,255,.95);
+  text-align:left;
+}
+
+#publicPage .kr-crowd-empty .empty-icon{
+  width:48px;height:48px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:#eee8ff;
+  font-size:24px;
+  margin-bottom:10px;
+}
+
+#publicPage .kr-crowd-empty b{
+  display:block;
+  font-size:14px;
+  color:#142548;
+  margin-bottom:4px;
+}
+
+#publicPage .kr-crowd-empty span{
+  display:block;
+  font-size:11px;
+  line-height:1.45;
+  color:#62728b;
+}
+
+#publicPage .kr-view-map{
+  position:relative;
+  z-index:3;
+  margin-top:auto!important;
+  width:100%!important;
+  min-height:44px!important;
+  border-radius:13px!important;
+  background:linear-gradient(135deg,#7050e5,#845eea)!important;
+  color:#fff!important;
+  font-size:12px!important;
+}
+
+/* QR */
+#publicPage .kr-qr-card{
+  background:linear-gradient(145deg,#edf6ff 0%,#fff 54%,#dceeff 100%);
+}
+
+#publicPage .kr-qr-visual{
+  position:relative;
+  z-index:2;
+  height:150px;
+  margin:15px 0 10px;
+  border-radius:18px;
+  background:
+    radial-gradient(circle at 78% 25%,rgba(62,141,235,.14),transparent 30%),
+    linear-gradient(145deg,#e9f4ff,#fff);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+
+#publicPage .kr-phone{
+  width:76px;height:112px;
+  border:4px solid #1d2e48;
+  border-radius:15px;
+  background:#fff;
+  box-shadow:0 10px 20px rgba(30,65,105,.18);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  position:relative;
+  z-index:3;
+}
+
+#publicPage .kr-phone:before{
+  content:"";
+  width:32px;height:32px;
+  background:
+    linear-gradient(90deg,#10284b 25%,transparent 25% 50%,#10284b 50% 75%,transparent 75%),
+    linear-gradient(#10284b 25%,transparent 25% 50%,#10284b 50% 75%,transparent 75%);
+  background-size:10px 10px;
+  border:3px solid #10284b;
+}
+
+#publicPage .kr-phone span{
+  font-size:8px;
+  font-weight:900;
+  color:#1b3151;
+}
+
+#publicPage .kr-qr-action{
+  position:relative;
+  z-index:3;
+  margin-top:auto!important;
+  width:100%!important;
+  min-height:44px!important;
+  border-radius:13px!important;
+  background:linear-gradient(135deg,#176ee0,#2b86f3)!important;
+  color:#fff!important;
+  font-size:12px!important;
+}
+
+/* Safety */
+#publicPage .kr-safety-card{
+  background:linear-gradient(145deg,#fff7ea 0%,#fff 53%,#ffe7ca 100%);
+}
+
+#publicPage .kr-band-visual{
+  position:absolute;
+  right:18px;bottom:54px;
+  width:120px;height:145px;
+  transform:rotate(-9deg);
+  opacity:.96;
+  z-index:2;
+}
+
+#publicPage .kr-band-strap{
+  position:absolute;
+  left:42px;top:0;
+  width:45px;height:142px;
+  border-radius:22px;
+  background:linear-gradient(90deg,#171b20,#343941,#12161b);
+  box-shadow:0 8px 20px rgba(20,22,25,.18);
+}
+
+#publicPage .kr-band-face{
+  position:absolute;
+  left:22px;top:30px;
+  width:86px;height:82px;
+  border-radius:18px;
+  background:linear-gradient(145deg,#2e343a,#101419);
+  border:4px solid #20252a;
+  box-shadow:0 12px 24px rgba(15,18,22,.23);
+  display:grid;
+  place-items:center;
+  color:#fff;
+  font-size:9px;
+  font-weight:900;
+  text-align:center;
+}
+
+#publicPage .kr-band-face:before{
+  content:"✚";
+  width:31px;height:31px;
+  display:grid;place-items:center;
+  border-radius:10px;
+  background:#ff7814;
+  margin-bottom:4px;
+  font-size:17px;
+}
+
+#publicPage .kr-safety-list{
+  position:relative;
+  z-index:3;
+  margin-top:17px;
+  width:68%;
+  display:grid;
+  gap:7px;
+}
+
+#publicPage .kr-safety-row{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  color:#19345a;
+  font-size:11px;
+  line-height:1.3;
+}
+
+#publicPage .kr-safety-row i{
+  width:31px;height:31px;
+  flex:0 0 31px;
+  display:grid;place-items:center;
+  border-radius:10px;
+  background:rgba(255,255,255,.82);
+  font-style:normal;
+  box-shadow:0 4px 10px rgba(70,53,26,.07);
+}
+
+#publicPage .kr-safety-action{
+  position:relative;
+  z-index:4;
+  margin-top:auto!important;
+  width:100%!important;
+  min-height:44px!important;
+  border-radius:13px!important;
+  background:linear-gradient(135deg,#ff7a16,#ff9b35)!important;
+  color:#fff!important;
+  font-size:12px!important;
+}
+
+/* Feedback */
+#publicPage .kr-design-feedback{
+  min-height:250px!important;
+  margin:0!important;
+  padding:20px!important;
+  border-radius:22px!important;
+  background:linear-gradient(145deg,#fff,#fbfcff)!important;
+  border:1px solid #e4eaf2!important;
+  box-shadow:0 10px 28px rgba(39,57,86,.08)!important;
+}
+
+#publicPage .kr-feedback-head{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+#publicPage .kr-feedback-icon{
+  width:48px;height:48px;
+  border-radius:15px;
+  display:grid;place-items:center;
+  background:#fff7d9;
+  font-size:27px;
+}
+
+#publicPage .kr-feedback-head h2{
+  margin:0 0 4px!important;
+  color:#142548!important;
+  font-size:21px!important;
+}
+
+#publicPage .kr-feedback-head p{
+  margin:0!important;
+  color:#667894!important;
+  font-size:12px!important;
+}
+
+#publicPage .kr-feedback-rating{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  margin:16px 0 12px;
+}
+
+#publicPage .kr-feedback-rating button{
+  min-height:58px!important;
+  margin:0!important;
+  border:1px solid #e2e8f0!important;
+  border-radius:13px!important;
+  background:#fbfcfe!important;
+  color:#283d5c!important;
+  font-size:12px!important;
+}
+
+#publicPage .kr-feedback-rating button.is-selected,
+#publicPage .kr-feedback-rating button:hover{
+  border-color:#f3c84e!important;
+  background:#fff8df!important;
+}
+
+#publicPage .kr-feedback-rating button .stars{
+  display:block;
+  color:#f5bd16;
+  font-size:16px;
+  margin-bottom:4px;
+}
+
+#publicPage .kr-feedback-text{
+  width:100%!important;
+  min-height:78px!important;
+  margin:0!important;
+  border-radius:13px!important;
+  background:#fbfcff!important;
+}
+
+#publicPage .kr-feedback-submit{
+  width:100%!important;
+  min-height:44px!important;
+  margin-top:10px!important;
+  border-radius:12px!important;
+  background:linear-gradient(135deg,#267df0,#2e8af5)!important;
+  color:#fff!important;
+}
+
+/* Emergency contacts */
+#publicPage #emergencyContactsCard.kr-design-card{
+  background:linear-gradient(145deg,#fff0f3 0%,#fff 58%,#fff4f6 100%)!important;
+}
+
+#publicPage .kr-emergency-head{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  position:relative;
+  z-index:3;
+}
+
+#publicPage .kr-emergency-icon{
+  width:50px;height:50px;
+  display:grid;place-items:center;
+  border-radius:15px;
+  background:#ffe4e8;
+  font-size:26px;
+}
+
+#publicPage .kr-emergency-head h2{
+  margin:2px 0 5px!important;
+  color:#142548!important;
+  font-size:20px!important;
+}
+
+#publicPage .kr-emergency-head p{
+  margin:0!important;
+  color:#667894!important;
+  font-size:12px!important;
+}
+
+#publicPage .kr-emergency-contacts{
+  position:relative;
+  z-index:3;
+  margin:14px 0 10px;
+  display:grid;
+  gap:7px;
+}
+
+#publicPage .kr-emergency-contact{
+  display:grid;
+  grid-template-columns:34px 1fr auto auto;
+  gap:8px;
+  align-items:center;
+  min-height:43px;
+  padding:6px 9px;
+  border-radius:12px;
+  background:rgba(255,255,255,.72);
+  border:1px solid rgba(255,210,216,.85);
+}
+
+#publicPage .kr-contact-icon{
+  width:30px;height:30px;
+  border-radius:10px;
+  display:grid;place-items:center;
+  background:#ffe9ed;
+  color:#e83c52;
+}
+
+#publicPage .kr-contact-name{
+  color:#172e50;
+  font-size:11px;
+  font-weight:800;
+}
+
+#publicPage .kr-contact-phone{
+  color:#172e50;
+  font-size:11px;
+  font-weight:800;
+}
+
+#publicPage .kr-contact-btn{
+  width:31px!important;height:31px!important;
+  min-height:31px!important;
+  margin:0!important;
+  padding:0!important;
+  border-radius:9px!important;
+  background:#fff!important;
+  border:1px solid #e7dfe2!important;
+  color:#176ee0!important;
+  font-size:13px!important;
+}
+
+#publicPage .kr-contact-btn.delete{
+  color:#e33b4e!important;
+}
+
+#publicPage .kr-emergency-actions{
+  position:relative;
+  z-index:3;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-top:auto;
+}
+
+#publicPage .kr-emergency-actions button{
+  min-height:43px!important;
+  margin:0!important;
+  border-radius:12px!important;
+  font-size:10px!important;
+}
+
+#publicPage .kr-emergency-note{
+  position:relative;
+  z-index:3;
+  margin-top:8px;
+  color:#65758b;
+  font-size:10px;
+  line-height:1.35;
+}
+
+/* Volunteer */
+#publicPage #volunteerApplyPublic.kr-design-card{
+  background:linear-gradient(145deg,#effaf4 0%,#fff 54%,#edf9f1 100%)!important;
+}
+
+#publicPage .kr-volunteer-copy{
+  position:relative;
+  z-index:3;
+  width:57%;
+  margin-top:18px;
+  display:grid;
+  gap:8px;
+}
+
+#publicPage .kr-volunteer-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  color:#193b2c;
+  font-size:11px;
+}
+
+#publicPage .kr-volunteer-row i{
+  width:22px;height:22px;
+  flex:0 0 22px;
+  display:grid;place-items:center;
+  border-radius:50%;
+  background:#ddf6e8;
+  color:#12a25b;
+  font-style:normal;
+  font-weight:900;
+}
+
+#publicPage .kr-volunteer-person{
+  position:absolute;
+  right:-10px;bottom:-2px;
+  width:45%;height:76%;
+  z-index:2;
+  opacity:.92;
+}
+
+#publicPage .kr-volunteer-person .head{
+  position:absolute;
+  right:45px;top:8px;
+  width:42px;height:42px;
+  border-radius:50%;
+  background:#b56d46;
+}
+
+#publicPage .kr-volunteer-person .body{
+  position:absolute;
+  right:8px;bottom:0;
+  width:108px;height:130px;
+  border-radius:42px 42px 8px 8px;
+  background:linear-gradient(145deg,#ff7517,#ef5a0a);
+  box-shadow:0 10px 20px rgba(180,75,10,.18);
+}
+
+#publicPage .kr-volunteer-person .vest{
+  position:absolute;
+  right:28px;bottom:42px;
+  width:68px;height:53px;
+  border-radius:9px;
+  color:#fff;
+  font-size:8px;
+  font-weight:900;
+  display:grid;
+  place-items:center;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.24);
+}
+
+#publicPage .kr-volunteer-person .cap{
+  position:absolute;
+  right:34px;top:0;
+  width:58px;height:18px;
+  border-radius:12px 12px 5px 5px;
+  background:#ff7416;
+}
+
+#publicPage .kr-volunteer-action{
+  position:relative;
+  z-index:5;
+  width:100%!important;
+  min-height:44px!important;
+  margin-top:auto!important;
+  border-radius:13px!important;
+  background:linear-gradient(135deg,#09a45b,#10b86a)!important;
+  color:#fff!important;
+  font-size:12px!important;
+}
+
+/* Hide native duplicate controls while keeping their DOM/functionality available. */
+#publicPage .kr-native-preserved{
+  display:none!important;
+}
+
+/* Keep the old emergency SOS card available lower in the dashboard, but
+   don't duplicate it in the new reference row. */
+#publicPage #emergencyCard.kr-reference-hidden{
+  display:none!important;
+}
+
+/* Responsive */
+@media(max-width:1050px){
+  #publicPage .kr-design-top-row{
+    grid-template-columns:1fr 1fr!important;
+  }
+  #publicPage .kr-design-top-row > #crowdCard{
+    grid-column:1/-1!important;
+  }
+}
+
+@media(max-width:760px){
+  #publicPage .kr-design-top-row,
+  #publicPage .kr-design-bottom-row{
+    grid-template-columns:1fr!important;
+  }
+  #publicPage .kr-design-top-row > #crowdCard{
+    grid-column:auto!important;
+  }
+  #publicPage .kr-feedback-rating{
+    grid-template-columns:repeat(3,1fr);
+  }
+  #publicPage .kr-volunteer-copy,
+  #publicPage .kr-safety-list{
+    width:100%;
+  }
+  #publicPage .kr-band-visual,
+  #publicPage .kr-volunteer-person{
+    opacity:.22;
+  }
+}
+</style>
+
+
+<style id="kr-reference-dashboard-final-fix">
+/* FINAL LAYOUT FIX:
+   Original functional sections stay in their normal order.
+   New reference cards are placed AFTER Charging + Parking.
+*/
+body:has(#publicPage.active){background:#eef2f8!important}
+
+#publicPage .kr-new-feature-row{
+  grid-column:1/-1!important;
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:16px!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+#publicPage .kr-new-bottom-row{
+  grid-column:1/-1!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:16px!important;
+  width:100%!important;
+  margin:0!important;
+  padding:0!important;
+}
+
+/* Live Crowd must be visible and full width. */
+#publicPage #crowdCard.kr-live-crowd-fixed{
+  grid-column:1/-1!important;
+  min-height:300px!important;
+  display:block!important;
+  margin:0!important;
+  padding:20px!important;
+  border-radius:20px!important;
+  background:linear-gradient(145deg,#f4f0ff,#fff 55%,#ece8ff)!important;
+  border:1px solid #e1e5f0!important;
+  box-shadow:0 10px 28px rgba(39,57,86,.08)!important;
+}
+
+#publicPage #crowdCard.kr-live-crowd-fixed .grid3{
+  display:grid!important;
+  grid-template-columns:repeat(3,1fr)!important;
+  gap:10px!important;
+  margin-top:14px!important;
+}
+
+#publicPage #crowdCard.kr-live-crowd-fixed .grid3 button{
+  min-height:54px!important;
+  border-radius:12px!important;
+}
+
+#publicPage .kr-ref-new-card{
+  min-height:310px!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  position:relative!important;
+  border:1px solid rgba(255,255,255,.9)!important;
+  border-radius:22px!important;
+  box-shadow:0 10px 28px rgba(39,57,86,.09)!important;
+}
+
+#publicPage .kr-ref-new-inner{
+  height:100%;
+  min-height:310px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+
+#publicPage .kr-ref-head{
+  display:flex;
+  align-items:flex-start;
+  gap:11px;
+  position:relative;
+  z-index:4;
+}
+
+#publicPage .kr-ref-icon{
+  width:48px;height:48px;flex:0 0 48px;
+  display:grid;place-items:center;
+  border-radius:15px;
+  background:rgba(255,255,255,.80);
+  box-shadow:0 7px 16px rgba(35,54,84,.09);
+  font-size:26px;
+}
+
+#publicPage .kr-ref-head h2{
+  margin:2px 0 5px!important;
+  font-size:20px!important;
+  line-height:1.12!important;
+  color:#142548!important;
+}
+
+#publicPage .kr-ref-head p{
+  margin:0!important;
+  font-size:12px!important;
+  line-height:1.42!important;
+  color:#60738f!important;
+}
+
+#publicPage .kr-ref-arrow{
+  margin:0 0 0 auto!important;
+  width:44px!important;height:44px!important;min-height:44px!important;
+  padding:0!important;
+  border-radius:13px!important;
+  background:rgba(255,255,255,.8)!important;
+  color:#18304f!important;
+}
+
+#publicPage .kr-crowd-new{
+  background:linear-gradient(145deg,#f3efff,#fff 55%,#ece7ff)!important;
+}
+
+#publicPage .kr-crowd-location{
+  position:relative;z-index:3;
+  margin-top:18px;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 12px;
+  border-radius:13px;
+  background:rgba(255,255,255,.72);
+  font-size:11px;font-weight:800;color:#19335a;
+}
+
+#publicPage .kr-live-pill{
+  padding:5px 8px;border-radius:999px;
+  background:#e3f8ed;color:#12944e;font-size:9px;
+}
+
+#publicPage .kr-crowd-empty{
+  position:relative;z-index:3;
+  margin-top:12px;padding:17px 14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.7);
+  border:1px solid rgba(255,255,255,.95);
+}
+
+#publicPage .kr-crowd-empty .ico{
+  width:42px;height:42px;border-radius:50%;
+  display:grid;place-items:center;
+  background:#eee8ff;font-size:21px;margin-bottom:8px;
+}
+
+#publicPage .kr-crowd-empty b{
+  display:block;color:#142548;font-size:13px;margin-bottom:4px;
+}
+
+#publicPage .kr-crowd-empty span{
+  display:block;color:#687995;font-size:10px;line-height:1.45;
+}
+
+#publicPage .kr-crowd-map-btn{
+  margin-top:auto!important;
+  width:100%!important;min-height:43px!important;
+  border-radius:12px!important;
+  background:linear-gradient(135deg,#6945dc,#835bea)!important;
+  color:#fff!important;
+}
+
+#publicPage .kr-qr-new{
+  background:linear-gradient(145deg,#edf6ff,#fff 54%,#dceeff)!important;
+}
+
+#publicPage .kr-qr-visual{
+  position:relative;z-index:2;
+  height:132px;margin:14px 0 9px;
+  border-radius:17px;
+  display:grid;place-items:center;
+  background:linear-gradient(145deg,#e8f4ff,#fff);
+  overflow:hidden;
+}
+
+#publicPage .kr-phone{
+  width:68px;height:105px;
+  border:4px solid #1d2e48;border-radius:14px;
+  background:#fff;
+  box-shadow:0 8px 18px rgba(30,65,105,.16);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:5px;
+}
+
+#publicPage .kr-phone .qr{
+  width:31px;height:31px;
+  border:3px solid #142d50;
+  background:
+    linear-gradient(90deg,#142d50 25%,transparent 25% 50%,#142d50 50% 75%,transparent 75%),
+    linear-gradient(#142d50 25%,transparent 25% 50%,#142d50 50% 75%,transparent 75%);
+  background-size:9px 9px;
+}
+
+#publicPage .kr-phone small{
+  font-size:7px;font-weight:900;color:#1d3557;
+}
+
+#publicPage .kr-qr-new #reader{
+  width:100%!important;
+  margin-top:8px!important;
+  border-radius:12px!important;
+  overflow:hidden!important;
+}
+
+#publicPage .kr-qr-new .qr-live-reader{
+  display:none;
+}
+
+#publicPage .kr-qr-action{
+  margin-top:auto!important;
+  width:100%!important;min-height:43px!important;
+  border-radius:12px!important;
+  background:linear-gradient(135deg,#176ee0,#2d8af5)!important;
+  color:#fff!important;
+}
+
+#publicPage .kr-safety-new{
+  background:linear-gradient(145deg,#fff7ea,#fff 54%,#ffe8cd)!important;
+}
+
+#publicPage .kr-safety-list{
+  position:relative;z-index:4;
+  width:70%;
+  margin-top:17px;
+  display:grid;gap:8px;
+}
+
+#publicPage .kr-safety-row{
+  display:flex;align-items:center;gap:8px;
+  color:#19345a;font-size:11px;
+}
+
+#publicPage .kr-safety-row i{
+  width:30px;height:30px;flex:0 0 30px;
+  display:grid;place-items:center;border-radius:10px;
+  background:rgba(255,255,255,.82);font-style:normal;
+}
+
+#publicPage .kr-band-art{
+  position:absolute;right:14px;bottom:58px;
+  width:105px;height:128px;z-index:2;
+  transform:rotate(-7deg);
+}
+
+#publicPage .kr-band-art .strap{
+  position:absolute;left:35px;top:0;width:38px;height:125px;
+  border-radius:20px;background:linear-gradient(90deg,#15191e,#363c42,#12161b);
+}
+
+#publicPage .kr-band-art .face{
+  position:absolute;left:17px;top:28px;width:76px;height:73px;
+  border-radius:16px;background:linear-gradient(145deg,#30363b,#101419);
+  border:4px solid #22272c;color:#fff;
+  display:grid;place-items:center;font-size:8px;font-weight:900;
+  box-shadow:0 9px 18px rgba(15,18,22,.2);
+}
+
+#publicPage .kr-band-art .face:before{
+  content:"✚";display:grid;place-items:center;
+  width:26px;height:26px;border-radius:8px;
+  background:#ff7916;font-size:14px;margin-bottom:3px;
+}
+
+#publicPage .kr-safety-action{
+  margin-top:auto!important;
+  width:100%!important;min-height:43px!important;
+  border-radius:12px!important;
+  background:linear-gradient(135deg,#ff7615,#ff9a32)!important;
+  color:#fff!important;
+}
+
+#publicPage .kr-feedback-fixed{
+  grid-column:1/-1!important;
+  min-height:235px!important;
+  margin:0!important;padding:20px!important;
+  border-radius:20px!important;
+  background:#fff!important;
+  border:1px solid #e3e9f1!important;
+  box-shadow:0 10px 28px rgba(39,57,86,.08)!important;
+}
+
+#publicPage .kr-feedback-fixed .rating-row{
+  display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0 10px;
+}
+
+#publicPage .kr-feedback-fixed .rating-row button{
+  margin:0!important;min-height:55px!important;
+  border-radius:12px!important;
+  background:#fbfcfe!important;border:1px solid #e2e8f0!important;
+}
+
+#publicPage .kr-feedback-fixed textarea{
+  min-height:68px!important;margin:0!important;
+}
+
+#publicPage .kr-feedback-fixed .submit{
+  width:100%!important;min-height:42px!important;
+  margin-top:9px!important;border-radius:11px!important;
+  background:linear-gradient(135deg,#267df0,#2e8af5)!important;color:#fff!important;
+}
+
+#publicPage .kr-emergency-fixed{
+  background:linear-gradient(145deg,#fff0f3,#fff 58%,#fff5f7)!important;
+}
+
+#publicPage .kr-volunteer-fixed{
+  background:linear-gradient(145deg,#effaf4,#fff 54%,#edf9f1)!important;
+}
+
+#publicPage .kr-contact-list{
+  margin:13px 0 9px;display:grid;gap:7px;
+}
+
+#publicPage .kr-contact-row{
+  display:grid;grid-template-columns:30px 1fr auto auto;gap:7px;align-items:center;
+  min-height:40px;padding:5px 8px;border-radius:11px;
+  background:rgba(255,255,255,.74);border:1px solid #f0dce1;
+}
+
+#publicPage .kr-contact-row .ico{
+  width:28px;height:28px;display:grid;place-items:center;border-radius:9px;
+  background:#ffe8ed;color:#e83d53;
+}
+
+#publicPage .kr-mini-btn{
+  width:29px!important;height:29px!important;min-height:29px!important;
+  padding:0!important;margin:0!important;border-radius:8px!important;
+  background:#fff!important;color:#176ee0!important;border:1px solid #e5e9ef!important;
+}
+
+#publicPage .kr-mini-btn.delete{color:#e33b4e!important}
+
+#publicPage .kr-bottom-actions{
+  margin-top:auto;display:grid;grid-template-columns:1fr 1fr;gap:8px;
+}
+
+#publicPage .kr-bottom-actions button{
+  margin:0!important;min-height:42px!important;border-radius:11px!important;font-size:10px!important;
+}
+
+#publicPage .kr-vol-list{
+  margin:16px 0 10px;display:grid;gap:7px;width:58%;
+}
+
+#publicPage .kr-vol-row{
+  display:flex;align-items:center;gap:8px;color:#1c3d2e;font-size:11px;
+}
+
+#publicPage .kr-vol-row i{
+  width:21px;height:21px;border-radius:50%;display:grid;place-items:center;
+  background:#dcf6e7;color:#0da15a;font-style:normal;font-weight:900;
+}
+
+#publicPage .kr-vol-person{
+  position:absolute;right:4px;bottom:-3px;width:40%;height:72%;opacity:.9;
+}
+
+#publicPage .kr-vol-person .head{
+  position:absolute;right:35px;top:5px;width:38px;height:38px;border-radius:50%;background:#b66d47;
+}
+#publicPage .kr-vol-person .body{
+  position:absolute;right:0;bottom:0;width:96px;height:112px;border-radius:38px 38px 8px 8px;
+  background:linear-gradient(145deg,#ff7417,#ed5a0b);
+}
+#publicPage .kr-vol-person .cap{
+  position:absolute;right:25px;top:0;width:53px;height:17px;border-radius:11px 11px 4px 4px;background:#ff7416;
+}
+#publicPage .kr-vol-person .vest{
+  position:absolute;right:20px;bottom:36px;width:60px;height:46px;border-radius:8px;
+  display:grid;place-items:center;color:#fff;font-size:7px;font-weight:900;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);
+}
+
+@media(max-width:1050px){
+  #publicPage .kr-new-feature-row{grid-template-columns:1fr 1fr!important}
+  #publicPage .kr-new-feature-row > :first-child{grid-column:1/-1!important}
+}
+@media(max-width:760px){
+  #publicPage .kr-new-feature-row,#publicPage .kr-new-bottom-row{grid-template-columns:1fr!important}
+  #publicPage #crowdCard.kr-live-crowd-fixed{grid-column:1/-1!important}
+  #publicPage #crowdCard.kr-live-crowd-fixed .grid3{grid-template-columns:1fr!important}
+  #publicPage .kr-safety-list,#publicPage .kr-vol-list{width:100%}
+  #publicPage .kr-band-art,#publicPage .kr-vol-person{opacity:.22}
+  #publicPage .kr-feedback-fixed .rating-row{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+
+
+<script id="kr-reference-dashboard-final-fix-js">
+(function(){
+  function publicGrid(){return document.querySelector('#publicPage .public-dashboard-grid');}
+
+  function cardByText(text){
+    const g=publicGrid(); if(!g) return null;
+    return [...g.children].find(el => (el.textContent||'').replace(/\s+/g,' ').includes(text));
+  }
+
+  function parkingCard(){
+    return document.getElementById('parkingCard') ||
+      cardByText('Car & Bike Parking');
+  }
+
+  function moveAfter(el,anchor){
+    if(el && anchor && el!==anchor) anchor.after(el);
+  }
+
+  function makeFeatureCard(cls,html){
+    const d=document.createElement('div');
+    d.className='kr-ref-new-card '+cls;
+    d.innerHTML=html;
+    return d;
+  }
+
+  function setup(){
+    const g=publicGrid(); if(!g) return;
+
+    /* Keep generated wrappers intact so repeated startup calls do not
+       delete the premium cards or the lower dashboard cards. */
+    const crowd=document.getElementById('crowdCard');
+    const qr=[...g.children].find(el=>el.id!=='krNewQR' && el.querySelector?.('#reader')) || document.querySelector('#publicPage > .card #reader')?.closest('.card');
+    const safety=[...g.children].find(el=>el.id!=='krNewSafety' && el.querySelector?.('#safetyRegistration')) || document.querySelector('#publicPage > .card #safetyRegistration')?.closest('.card');
+    const feedback=[...g.children].find(el=>el.id!=='krFinalFeedback' && el.querySelector?.('#feedbackText')) || document.querySelector('#publicPage > .card #feedbackText')?.closest('.card');
+    const emergencyOld=document.getElementById('emergencyCard');
+    const emergencyContacts=document.getElementById('emergencyContactsCard');
+    const volunteer=document.getElementById('volunteerApplyPublic');
+    const parking=parkingCard();
+
+    /* Any cards injected directly under #publicPage must be brought into
+       the dashboard grid so the lower sections remain visible. */
+    [emergencyContacts, volunteer].forEach(el=>{
+      if(el && el.parentElement!==g) g.appendChild(el);
+    });
+
+    /* Restore the original Live Crowd card instead of replacing it. */
+    if(crowd){
+      crowd.classList.remove('kr-design-card');
+      crowd.classList.add('kr-live-crowd-fixed');
+      crowd.style.display='block';
+      crowd.style.gridColumn='1/-1';
+    }
+
+    /* Build new 3-card row. */
+    let featureRow=g.querySelector('.kr-new-feature-row');
+    if(!featureRow){
+      featureRow=document.createElement('div');
+      featureRow.className='kr-new-feature-row';
+    }
+
+    /* New Crowd Reports card */
+    let newCrowd=document.getElementById('krNewCrowdReports');
+    if(!newCrowd){
+      newCrowd=makeFeatureCard('kr-crowd-new',`
+        <div class="kr-ref-new-inner">
+          <div class="kr-ref-head">
+            <div class="kr-ref-icon">📊</div>
+            <div><h2>Crowd Reports Near You</h2><p>Get real-time crowd updates and live reports from nearby areas.</p></div>
+            <button class="kr-ref-arrow" type="button" onclick="document.getElementById('crowdCard')?.scrollIntoView({behavior:'smooth',block:'center'})">→</button>
+          </div>
+          <div class="kr-crowd-location"><span>📍 Ramkund, Nashik</span><span class="kr-live-pill">● Live</span></div>
+          <div class="kr-crowd-empty">
+            <div class="ico">👥</div>
+            <b>No recent reports</b>
+            <span>Only recent reports are used, so old crowd data does not remain permanently active.</span>
+          </div>
+          <button class="kr-crowd-map-btn" type="button" onclick="document.getElementById('crowdCard')?.scrollIntoView({behavior:'smooth',block:'center'})">🗺️ View Map →</button>
+        </div>`);
+      newCrowd.id='krNewCrowdReports';
+    }
+
+    /* New QR card keeps the REAL #reader visible. */
+    let newQR=document.getElementById('krNewQR');
+    if(!newQR){
+      newQR=makeFeatureCard('kr-qr-new',`
+        <div class="kr-ref-new-inner">
+          <div class="kr-ref-head">
+            <div class="kr-ref-icon">▦</div>
+            <div><h2>Scan QR Code</h2><p>Service QR works for everyone. Personal Safety Band QR requires login.</p></div>
+          </div>
+          <div class="kr-qr-visual">
+            <div class="kr-phone"><div class="qr"></div><small>Scan Here</small></div>
+          </div>
+          <button class="kr-qr-action" type="button" onclick="(typeof startScanner==='function' ? startScanner() : alert('QR scanner is not available yet.'))">▣ &nbsp; Start QR Scanner →</button>
+          <div id="krScannerHost"></div>
+        </div>`);
+      newQR.id='krNewQR';
+    }
+
+    /* New Safety card */
+    let newSafety=document.getElementById('krNewSafety');
+    if(!newSafety){
+      newSafety=makeFeatureCard('kr-safety-new',`
+        <div class="kr-ref-new-inner">
+          <div class="kr-ref-head">
+            <div class="kr-ref-icon">🛡️</div>
+            <div><h2>Safety Band</h2><p>Register a child or elderly person's Safety Band after logging in.</p></div>
+          </div>
+          <div class="kr-safety-list">
+            <div class="kr-safety-row"><i>👥</i><span>For children &amp; elderly</span></div>
+            <div class="kr-safety-row"><i>📍</i><span>Live location sharing</span></div>
+            <div class="kr-safety-row"><i>🔔</i><span>Quick emergency alerts</span></div>
+          </div>
+          <div class="kr-band-art"><div class="strap"></div><div class="face">Kumbh<br>Safety</div></div>
+          <button class="kr-safety-action" type="button" onclick="(typeof showSafetyRegistration==='function' ? showSafetyRegistration() : alert('Safety Band is not available yet.'))">👤 &nbsp; Register / View My Safety Band →</button>
+          <div id="krSafetyHost"></div>
+        </div>`);
+      newSafety.id='krNewSafety';
+    }
+
+    /* Insert the feature row into the grid BEFORE moving functional nodes.
+       This makes #krScannerHost/#krSafetyHost real DOM elements. */
+    if(!featureRow.parentElement) g.appendChild(featureRow);
+    featureRow.append(newCrowd,newQR,newSafety);
+
+    /* Put the REAL scanner/safety result nodes into the visible cards. */
+    const scannerHost=document.getElementById('krScannerHost');
+    const safetyHost=document.getElementById('krSafetyHost');
+
+    if(qr){
+      const reader=qr.querySelector('#reader');
+      const qrResult=qr.querySelector('#qrResult');
+      if(reader && scannerHost) scannerHost.appendChild(reader);
+      if(qrResult && scannerHost) scannerHost.appendChild(qrResult);
+      qr.style.display='none';
+    }
+
+    if(safety){
+      const reg=safety.querySelector('#safetyRegistration');
+      if(reg && safetyHost) safetyHost.appendChild(reg);
+      safety.style.display='none';
+    }
+
+    /* Exact dashboard order:
+       Charging + Parking -> Live Crowd -> Premium 3-card row -> lower cards. */
+    if(parking && parking.parentElement===g){
+      parking.after(crowd);
+    }
+    if(crowd && crowd.parentElement===g){
+      crowd.after(featureRow);
+    }else if(parking && parking.parentElement===g){
+      parking.after(featureRow);
+    }
+
+    /* Hide ONLY the original QR and Safety cards. Keep all other original
+       dashboard cards (including Emergency Assistance and Feedback). */
+    if(qr && qr!==newQR) qr.style.display='none';
+    if(safety && safety!==newSafety) safety.style.display='none';
+
+    /* Feedback: keep the original functional feedback card only.
+       Do not create a second visual feedback card. */
+    if(feedback){
+      feedback.style.display='block';
+      feedback.classList.add('kr-feedback-fixed');
+    }
+
+    /* Bottom row: emergency contacts + volunteer */
+    if(emergencyContacts || volunteer){
+      let bottom=g.querySelector('.kr-new-bottom-row');
+      if(!bottom){
+        bottom=document.createElement('div');
+        bottom.className='kr-new-bottom-row';
+      }
+
+      if(emergencyContacts){
+        emergencyContacts.className='kr-ref-new-card kr-emergency-fixed';
+        emergencyContacts.style.display='block';
+        emergencyContacts.innerHTML=`
+          <div class="kr-ref-new-inner">
+            <div class="kr-ref-head">
+              <div class="kr-ref-icon">🆘</div>
+              <div><h2>Emergency Contacts &amp; Live Safety</h2><p>Save important contacts for quick access during emergencies.</p></div>
+            </div>
+            <div id="krFinalEmergencyContacts" class="kr-contact-list"></div>
+            <div class="kr-bottom-actions">
+              <button class="red" type="button" onclick="shareEmergencyWithContacts()">📍 Share My Current Location</button>
+              <button class="purple" type="button" onclick="editEmergencyContacts()">✎ Edit Contacts</button>
+            </div>
+            <div style="margin-top:7px;color:#65758b;font-size:10px;line-height:1.35">Location sharing uses your current live GPS position. Continuous background tracking requires a secure backend/service and user permission.</div>
+          </div>`;
+        bottom.appendChild(emergencyContacts);
+      }
+
+      if(volunteer){
+        volunteer.className='kr-ref-new-card kr-volunteer-fixed';
+        volunteer.style.display='block';
+        volunteer.innerHTML=`
+          <div class="kr-ref-new-inner">
+            <div class="kr-ref-head">
+              <div class="kr-ref-icon">🤝</div>
+              <div><h2>Interested in Being a Volunteer?</h2><p>Submit your details. The Admin/Authority can review and approve your application.</p></div>
+            </div>
+            <div class="kr-vol-list">
+              <div class="kr-vol-row"><i>✓</i><span>Be a part of a safer Kumbh</span></div>
+              <div class="kr-vol-row"><i>✓</i><span>Help pilgrims and visitors</span></div>
+              <div class="kr-vol-row"><i>✓</i><span>Support local administration</span></div>
+              <div class="kr-vol-row"><i>✓</i><span>Make a positive impact</span></div>
+            </div>
+            <div class="kr-vol-person"><div class="cap"></div><div class="head"></div><div class="body"></div><div class="vest">VOLUNTEER</div></div>
+            <button class="kr-safety-action" type="button" style="background:linear-gradient(135deg,#09a45b,#10b86a)!important" onclick="showVolunteerApplication()">👤 &nbsp; Apply to Become a Volunteer →</button>
+            <div id="volunteerApplicationForm"></div>
+          </div>`;
+        bottom.appendChild(volunteer);
+      }
+
+      if(bottom.children.length){
+        if(document.getElementById('krFinalFeedback')) document.getElementById('krFinalFeedback').after(bottom);
+        else featureRow.after(bottom);
+      }
+    }
+
+    renderEmergencyContacts();
+  }
+
+  /* Final idempotent dashboard repair.
+     This runs after all injected cards exist and prevents duplicate/hidden
+     lower sections when the original app re-renders. */
+  function ensureExactLocationVisible(){
+    const page=document.getElementById('publicPage');
+    const g=page?.querySelector('.public-dashboard-grid');
+    const loc=document.getElementById('locationCard');
+    if(!g||!loc) return;
+    loc.style.display='block';
+    loc.classList.add('kr-lw-location');
+    const btn=loc.querySelector("button[onclick*=\"getLocation\"]") || loc.querySelector('button.blue');
+    if(btn){
+      btn.setAttribute('onclick','getLocation()');
+      btn.innerHTML='<span style="font-size:23px">◎</span> GET MY EXACT LOCATION';
+      btn.style.display='flex';
+    }
+    if(loc.parentElement!==g) g.appendChild(loc);
+  }
+
+  function finalDashboardRepair(){
+    const g=publicGrid(); if(!g) return;
+    ensureExactLocationVisible();
+    const feature=g.querySelector('.kr-new-feature-row');
+    const crowd=document.getElementById('crowdCard');
+    const parking=parkingCard();
+    const qrOriginal=[...g.children].find(el=>el.id!=='krNewQR' && el.querySelector?.('#reader'));
+    const safetyOriginal=[...g.children].find(el=>el.id!=='krNewSafety' && el.querySelector?.('#safetyRegistration'));
+    const emergency=document.getElementById('emergencyCard');
+    const feedback=[...g.children].find(el=>el.id!=='krFinalFeedback' && el.querySelector?.('#feedbackText'));
+    const ec=document.getElementById('emergencyContactsCard');
+    const vol=document.getElementById('volunteerApplyPublic');
+
+    [ec,vol].forEach(el=>{ if(el && el.parentElement!==g) g.appendChild(el); });
+
+    if(qrOriginal) qrOriginal.style.display='none';
+    if(safetyOriginal) safetyOriginal.style.display='none';
+    if(emergency) emergency.style.display='block';
+    if(feedback && feedback!==document.getElementById('krFinalFeedback')) feedback.style.display='block';
+
+    if(parking && crowd && parking.parentElement===g){
+      parking.after(crowd);
+      if(feature) crowd.after(feature);
+    }
+    if(feature) feature.style.display='grid';
+
+    const bottom=g.querySelector('.kr-new-bottom-row');
+    if(bottom) bottom.style.display='grid';
+
+    /* Move feedback and bottom row after the feature row so lower cards
+       cannot disappear below the generated wrappers. */
+    const finalFeedback=document.getElementById('krFinalFeedback');
+    if(finalFeedback && feature) feature.after(finalFeedback);
+    const bottomRow=g.querySelector('.kr-new-bottom-row');
+    if(bottomRow && finalFeedback) finalFeedback.after(bottomRow);
+    else if(bottomRow && feature) feature.after(bottomRow);
+  }
+
+  function renderPremiumEmergencyContacts(){
+    const escapeHtml=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    const out=document.getElementById('krFinalEmergencyContacts');
+    if(!out) return;
+    const user=(typeof currentUser!=='undefined')?currentUser:null;
+    const contacts=(user && typeof emergencyContacts!=='undefined' ? (emergencyContacts[user.id]||[]) : []);
+    if(!user){
+      out.innerHTML='<div class="result info">🔒 Login to add and use your personal emergency contacts.</div>';
+      return;
+    }
+    if(!contacts.length){
+      out.innerHTML='<div class="result info">No emergency contacts saved yet. Click <b>Edit Contacts</b> to add them.</div>';
+      return;
+    }
+    out.innerHTML=contacts.slice(0,2).map((c,i)=>`
+      <div class="kr-contact-row">
+        <span class="ico">●</span>
+        <span style="font-size:10px;font-weight:800;color:#19345a">${escapeHtml(c.name||'Contact '+(i+1))}</span>
+        <span style="font-size:10px;font-weight:800;color:#19345a">${escapeHtml(c.phone||'Not set')}</span>
+        <button class="kr-mini-btn" type="button" onclick="editEmergencyContacts()">✎</button>
+      </div>`).join('');
+  }
+
+  function bootPremiumDashboard(){
+    try{ setup(); }catch(err){ console.warn('Kumbh premium UI setup skipped:', err); }
+    setTimeout(()=>{ try{ renderPremiumEmergencyContacts(); finalDashboardRepair(); }catch(err){} },300);
+    setTimeout(()=>{ try{ renderPremiumEmergencyContacts(); finalDashboardRepair(); }catch(err){} },1000);
+    setTimeout(()=>{ try{ finalDashboardRepair(); }catch(err){} },1800);
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    setTimeout(bootPremiumDashboard,150);
+    setTimeout(bootPremiumDashboard,700);
+    setTimeout(bootPremiumDashboard,1500);
+  });
+})();
+</script>
+
+
+<style id="kr-premium-ui-only">
+/* ==========================================================
+   KUMBH RAKSHAK — PREMIUM UI ONLY
+   IMPORTANT: No grid/order/position rules are changed here.
+   This stylesheet only changes visual styling.
+   ========================================================== */
+
+#publicPage{
+  --kr-navy:#12264a;
+  --kr-muted:#61738f;
+  --kr-purple:#6844d9;
+  --kr-blue:#1677e8;
+  --kr-orange:#ff7a18;
+  --kr-red:#e52b35;
+  --kr-green:#0ba562;
+}
+
+/* Global card polish without changing placement */
+#publicPage .card,
+#publicPage .kr-ref-new-card,
+#publicPage .kr-live-crowd-fixed,
+#publicPage .kr-feedback-fixed{
+  border-radius:24px!important;
+  border:1px solid rgba(255,255,255,.88)!important;
+  box-shadow:
+    0 18px 45px rgba(33,52,84,.09),
+    0 3px 10px rgba(33,52,84,.04),
+    inset 0 1px 0 rgba(255,255,255,.95)!important;
+  overflow:hidden!important;
+  position:relative;
+}
+
+/* Fine top highlight */
+#publicPage .kr-ref-new-card::before,
+#publicPage .kr-live-crowd-fixed::before,
+#publicPage .kr-feedback-fixed::before,
+#publicPage #emergencyCard::before,
+#publicPage #emergencyContactsCard::before,
+#publicPage #volunteerApplyPublic::before{
+  content:"";
+  position:absolute;
+  left:0;right:0;top:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,126,34,.8) 12%,rgba(255,126,34,.8) 88%,transparent 100%);
+  z-index:10;
+  pointer-events:none;
+}
+
+/* Headings */
+#publicPage .kr-ref-head h2,
+#publicPage #crowdCard h2,
+#publicPage #emergencyCard h2,
+#publicPage #emergencyContactsCard h2,
+#publicPage #volunteerApplyPublic h2,
+#publicPage .kr-feedback-fixed h2{
+  color:var(--kr-navy)!important;
+  font-weight:800!important;
+  letter-spacing:-.035em!important;
+}
+
+#publicPage .kr-ref-head p,
+#publicPage #crowdCard p,
+#publicPage #emergencyCard p,
+#publicPage #emergencyContactsCard p,
+#publicPage #volunteerApplyPublic p,
+#publicPage .kr-feedback-fixed p{
+  color:var(--kr-muted)!important;
+}
+
+/* Premium icon tiles */
+#publicPage .kr-ref-icon{
+  border:1px solid rgba(255,255,255,.9)!important;
+  box-shadow:
+    0 10px 22px rgba(36,57,91,.10),
+    inset 0 1px 0 rgba(255,255,255,.9)!important;
+}
+
+/* Crowd card */
+#publicPage .kr-crowd-new{
+  background:
+    radial-gradient(circle at 88% 12%,rgba(255,174,219,.28),transparent 28%),
+    radial-gradient(circle at 78% 80%,rgba(128,94,232,.15),transparent 32%),
+    linear-gradient(145deg,#f7f2ff 0%,#ffffff 52%,#eee8ff 100%)!important;
+}
+
+#publicPage .kr-crowd-new::after{
+  content:"";
+  position:absolute;
+  width:210px;height:210px;
+  right:-70px;bottom:-85px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(115,82,220,.14),transparent 68%);
+  pointer-events:none;
+}
+
+#publicPage .kr-crowd-location{
+  border:1px solid rgba(113,91,211,.08)!important;
+  box-shadow:0 8px 20px rgba(44,59,90,.05)!important;
+  backdrop-filter:blur(10px)!important;
+}
+
+#publicPage .kr-live-pill{
+  box-shadow:0 4px 12px rgba(22,165,92,.10)!important;
+}
+
+#publicPage .kr-crowd-empty{
+  border:1px solid rgba(255,255,255,.9)!important;
+  box-shadow:0 9px 24px rgba(43,58,90,.06)!important;
+  backdrop-filter:blur(8px)!important;
+}
+
+#publicPage .kr-crowd-empty .ico{
+  box-shadow:inset 0 0 0 1px rgba(112,77,220,.06)!important;
+}
+
+#publicPage .kr-crowd-map-btn{
+  box-shadow:0 10px 22px rgba(105,69,220,.23)!important;
+  font-weight:800!important;
+  letter-spacing:.01em!important;
+  transition:transform .18s ease,box-shadow .18s ease!important;
+}
+#publicPage .kr-crowd-map-btn:hover{
+  transform:translateY(-1px)!important;
+  box-shadow:0 13px 27px rgba(105,69,220,.28)!important;
+}
+
+/* QR */
+#publicPage .kr-qr-new{
+  background:
+    radial-gradient(circle at 92% 13%,rgba(89,168,255,.18),transparent 30%),
+    linear-gradient(145deg,#edf7ff 0%,#fff 56%,#e0efff 100%)!important;
+}
+
+#publicPage .kr-qr-new::after{
+  content:"";
+  position:absolute;
+  right:-65px;top:-65px;
+  width:180px;height:180px;
+  border-radius:50%;
+  border:1px solid rgba(60,145,239,.10);
+  box-shadow:0 0 0 25px rgba(60,145,239,.025),0 0 0 50px rgba(60,145,239,.018);
+  pointer-events:none;
+}
+
+#publicPage .kr-qr-visual{
+  border:1px solid rgba(65,147,235,.10)!important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9)!important;
+}
+
+#publicPage .kr-phone{
+  box-shadow:
+    0 16px 30px rgba(31,72,116,.16),
+    0 3px 6px rgba(31,72,116,.08)!important;
+}
+
+#publicPage .kr-qr-action{
+  box-shadow:0 10px 24px rgba(27,112,226,.23)!important;
+  font-weight:800!important;
+  transition:transform .18s ease,box-shadow .18s ease!important;
+}
+#publicPage .kr-qr-action:hover{
+  transform:translateY(-1px)!important;
+  box-shadow:0 13px 29px rgba(27,112,226,.28)!important;
+}
+
+/* Safety Band */
+#publicPage .kr-safety-new{
+  background:
+    radial-gradient(circle at 87% 13%,rgba(255,192,105,.25),transparent 27%),
+    linear-gradient(145deg,#fff8ec 0%,#fff 55%,#ffead0 100%)!important;
+}
+
+#publicPage .kr-safety-row{
+  padding:7px 9px!important;
+  border-radius:12px!important;
+  background:rgba(255,255,255,.58)!important;
+  border:1px solid rgba(255,255,255,.82)!important;
+  box-shadow:0 5px 14px rgba(67,54,35,.04)!important;
+}
+
+#publicPage .kr-band-art .face{
+  box-shadow:
+    0 16px 28px rgba(17,21,25,.25),
+    inset 0 1px 0 rgba(255,255,255,.12)!important;
+}
+
+#publicPage .kr-safety-action{
+  box-shadow:0 10px 23px rgba(255,116,21,.22)!important;
+  font-weight:800!important;
+  transition:transform .18s ease,box-shadow .18s ease!important;
+}
+#publicPage .kr-safety-action:hover{
+  transform:translateY(-1px)!important;
+  box-shadow:0 13px 29px rgba(255,116,21,.28)!important;
+}
+
+/* Live Crowd original functional section */
+#publicPage #crowdCard.kr-live-crowd-fixed{
+  background:
+    radial-gradient(circle at 90% 12%,rgba(164,133,255,.20),transparent 27%),
+    linear-gradient(145deg,#f5f1ff 0%,#fff 56%,#eee9ff 100%)!important;
+}
+
+#publicPage #crowdCard.kr-live-crowd-fixed .grid3 button{
+  border:1px solid rgba(255,255,255,.9)!important;
+  box-shadow:0 7px 17px rgba(40,55,85,.07)!important;
+  font-weight:800!important;
+  transition:transform .18s ease,box-shadow .18s ease!important;
+}
+#publicPage #crowdCard.kr-live-crowd-fixed .grid3 button:hover{
+  transform:translateY(-1px)!important;
+}
+
+/* Emergency Assistance */
+#publicPage #emergencyCard{
+  background:
+    radial-gradient(circle at 88% 14%,rgba(255,101,119,.16),transparent 25%),
+    linear-gradient(145deg,#fff0f3 0%,#fff 60%,#fff4f6 100%)!important;
+}
+
+#publicPage #emergencyCard h2{
+  font-size:21px!important;
+}
+
+#publicPage #emergencyCard .red{
+  border-radius:17px!important;
+  background:linear-gradient(135deg,#ff404c,#d91f2a)!important;
+  box-shadow:
+    0 14px 28px rgba(220,37,49,.24),
+    inset 0 1px 0 rgba(255,255,255,.22)!important;
+  font-weight:800!important;
+  letter-spacing:.01em!important;
+  transition:transform .18s ease,box-shadow .18s ease!important;
+}
+#publicPage #emergencyCard .red:hover{
+  transform:translateY(-1px)!important;
+  box-shadow:0 17px 33px rgba(220,37,49,.29)!important;
+}
+
+/* Emergency contacts */
+#publicPage #emergencyContactsCard{
+  background:
+    radial-gradient(circle at 90% 12%,rgba(255,125,150,.14),transparent 26%),
+    linear-gradient(145deg,#fff1f4,#fff 60%,#fff6f8)!important;
+}
+
+#publicPage .kr-contact-row{
+  box-shadow:0 6px 16px rgba(54,46,62,.05)!important;
+}
+
+#publicPage .kr-bottom-actions button{
+  box-shadow:0 7px 16px rgba(35,54,84,.08)!important;
+  font-weight:800!important;
+}
+
+/* Volunteer */
+#publicPage #volunteerApplyPublic{
+  background:
+    radial-gradient(circle at 88% 12%,rgba(62,205,130,.16),transparent 27%),
+    linear-gradient(145deg,#eefbf4,#fff 58%,#edf9f2)!important;
+}
+
+/* Feedback */
+#publicPage .kr-feedback-fixed{
+  background:
+    radial-gradient(circle at 96% 0%,rgba(255,215,91,.13),transparent 25%),
+    #fff!important;
+}
+
+#publicPage .kr-feedback-fixed .rating-row button{
+  box-shadow:0 6px 15px rgba(39,57,86,.04)!important;
+  transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease!important;
+}
+#publicPage .kr-feedback-fixed .rating-row button:hover,
+#publicPage .kr-feedback-fixed .rating-row button.is-selected{
+  transform:translateY(-1px)!important;
+  border-color:#f1c54b!important;
+  box-shadow:0 9px 19px rgba(214,169,35,.12)!important;
+}
+
+/* Buttons throughout the new UI */
+#publicPage .kr-ref-new-card button,
+#publicPage #emergencyCard button,
+#publicPage #emergencyContactsCard button,
+#publicPage #volunteerApplyPublic button{
+  font-family:inherit!important;
+}
+
+/* Softer typography */
+#publicPage .kr-ref-new-card,
+#publicPage #crowdCard,
+#publicPage #emergencyCard,
+#publicPage #emergencyContactsCard,
+#publicPage #volunteerApplyPublic,
+#publicPage .kr-feedback-fixed{
+  -webkit-font-smoothing:antialiased!important;
+  text-rendering:optimizeLegibility!important;
+}
+
+/* Premium scrollbar for scanner/result areas */
+#publicPage #reader,
+#publicPage #safetyRegistration,
+#publicPage #crowdResult{
+  scrollbar-width:thin;
+}
+
+/* Subtle hover lift ONLY — no position/grid changes */
+@media (hover:hover){
+  #publicPage .kr-ref-new-card:hover,
+  #publicPage #emergencyCard:hover,
+  #publicPage #emergencyContactsCard:hover,
+  #publicPage #volunteerApplyPublic:hover{
+    box-shadow:
+      0 22px 52px rgba(33,52,84,.12),
+      0 4px 12px rgba(33,52,84,.05),
+      inset 0 1px 0 rgba(255,255,255,.95)!important;
+  }
+}
+</style>
+
+
+<style id="kr-premium-reference-match">
+/* KUMBH RAKSHAK — PREMIUM REFERENCE VISUAL MATCH
+   Visual styling only. Existing placement/order/grid is untouched. */
+
+#publicPage{
+  --kr-ink:#10254a; --kr-sub:#58708f;
+  --kr-purple:#7047e8; --kr-blue:#087cf0;
+  --kr-orange:#ff7b18; --kr-red:#ef2c37;
+}
+
+#publicPage .kr-ref-new-card{
+  border-radius:24px!important;
+  border:1px solid rgba(255,255,255,.96)!important;
+  box-shadow:0 18px 42px rgba(30,52,85,.11),0 2px 7px rgba(30,52,85,.05),inset 0 1px 0 rgba(255,255,255,.98)!important;
+  isolation:isolate!important;
+}
+
+/* Crowd Reports */
+#publicPage #krNewCrowdReports{
+  background:radial-gradient(circle at 88% 8%,rgba(255,177,216,.42),transparent 30%),radial-gradient(circle at 78% 90%,rgba(126,92,226,.17),transparent 35%),linear-gradient(145deg,#f5efff 0%,#fff 48%,#eee5ff 100%)!important;
+}
+#publicPage #krNewCrowdReports::after{
+  content:"";position:absolute;right:-15px;bottom:5px;width:270px;height:170px;
+  background:linear-gradient(155deg,transparent 0 38%,rgba(104,72,205,.12) 39% 41%,transparent 42%),linear-gradient(20deg,transparent 0 45%,rgba(104,72,205,.10) 46% 48%,transparent 49%),radial-gradient(ellipse at 55% 70%,rgba(104,72,205,.13),transparent 60%);
+  border-radius:50%;z-index:0;pointer-events:none;
+}
+#publicPage #krNewCrowdReports .kr-ref-head,
+#publicPage #krNewCrowdReports .kr-crowd-location,
+#publicPage #krNewCrowdReports .kr-crowd-empty,
+#publicPage #krNewCrowdReports .kr-crowd-map-btn{position:relative!important;z-index:3!important}
+#publicPage #krNewCrowdReports .kr-ref-icon{
+  background:linear-gradient(145deg,#eee5ff,#e2d4ff)!important;color:#6540db!important;
+  box-shadow:0 9px 22px rgba(102,64,219,.16)!important;
+}
+#publicPage #krNewCrowdReports .kr-ref-head h2,
+#publicPage #krNewQR .kr-ref-head h2,
+#publicPage #krNewSafety .kr-ref-head h2{font-size:21px!important;color:var(--kr-ink)!important}
+#publicPage #krNewCrowdReports .kr-ref-head p{max-width:270px!important;font-size:12px!important;line-height:1.42!important}
+#publicPage #krNewCrowdReports .kr-crowd-location{
+  margin-top:18px!important;min-height:42px!important;padding:8px 12px!important;
+  background:rgba(255,255,255,.76)!important;border:1px solid rgba(255,255,255,.94)!important;
+  box-shadow:0 8px 20px rgba(36,55,90,.07)!important;backdrop-filter:blur(10px)!important;
+}
+#publicPage #krNewCrowdReports .kr-live-pill{background:#e3f9ed!important;color:#109650!important;box-shadow:0 4px 10px rgba(16,150,80,.10)!important}
+#publicPage #krNewCrowdReports .kr-crowd-empty{
+  padding:18px!important;background:rgba(255,255,255,.70)!important;
+  border:1px solid rgba(255,255,255,.92)!important;box-shadow:0 10px 25px rgba(38,56,88,.07)!important;
+  backdrop-filter:blur(10px)!important;
+}
+#publicPage #krNewCrowdReports .kr-crowd-empty .ico{background:#eee5ff!important;color:#6942dd!important;box-shadow:0 6px 14px rgba(105,66,221,.10)!important}
+#publicPage #krNewCrowdReports .kr-crowd-empty b{color:var(--kr-ink)!important;font-size:13px!important}
+#publicPage #krNewCrowdReports .kr-crowd-empty span{color:#61718b!important;font-size:10.5px!important}
+#publicPage #krNewCrowdReports .kr-crowd-map-btn{
+  min-height:45px!important;border-radius:14px!important;background:linear-gradient(100deg,#6b43dc,#8257ed)!important;
+  box-shadow:0 11px 24px rgba(105,67,220,.25)!important;font-weight:800!important;
+}
+
+/* QR */
+#publicPage #krNewQR{
+  background:radial-gradient(circle at 88% 14%,rgba(103,186,255,.28),transparent 31%),radial-gradient(circle at 18% 88%,rgba(93,164,255,.13),transparent 28%),linear-gradient(145deg,#edf7ff 0%,#fff 50%,#dff0ff 100%)!important;
+}
+#publicPage #krNewQR .kr-ref-icon{
+  background:linear-gradient(145deg,#d8ecff,#c9e4ff)!important;color:#087cf0!important;
+  box-shadow:0 9px 22px rgba(8,124,240,.15)!important;
+}
+#publicPage #krNewQR .kr-qr-visual{
+  background:radial-gradient(circle at 25% 70%,rgba(64,155,241,.14),transparent 27%),linear-gradient(145deg,#e8f5ff,#fff)!important;
+  border:1px solid rgba(73,158,241,.10)!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.96)!important;
+}
+#publicPage #krNewQR .kr-phone{
+  width:74px!important;height:113px!important;border-width:4px!important;border-radius:16px!important;
+  box-shadow:0 17px 31px rgba(23,70,113,.20),0 3px 7px rgba(23,70,113,.08)!important;
+}
+#publicPage #krNewQR .kr-phone .qr{width:34px!important;height:34px!important;border-color:#112d50!important}
+#publicPage #krNewQR .kr-qr-action{
+  min-height:46px!important;border-radius:14px!important;background:linear-gradient(100deg,#087bf0,#2c8df4)!important;
+  box-shadow:0 11px 25px rgba(8,123,240,.25)!important;font-size:12px!important;font-weight:800!important;
+}
+
+/* Safety */
+#publicPage #krNewSafety{
+  background:radial-gradient(circle at 88% 14%,rgba(255,196,106,.34),transparent 30%),radial-gradient(circle at 75% 90%,rgba(255,131,44,.11),transparent 34%),linear-gradient(145deg,#fff8eb 0%,#fff 50%,#ffead3 100%)!important;
+}
+#publicPage #krNewSafety .kr-ref-icon{
+  background:linear-gradient(145deg,#ffe9c5,#ffd9a1)!important;color:#ff7b18!important;
+  box-shadow:0 9px 22px rgba(255,123,24,.14)!important;
+}
+#publicPage #krNewSafety .kr-safety-list{gap:8px!important}
+#publicPage #krNewSafety .kr-safety-row{
+  min-height:38px!important;padding:6px 9px!important;border-radius:13px!important;
+  background:rgba(255,255,255,.70)!important;border:1px solid rgba(255,255,255,.90)!important;
+  box-shadow:0 7px 17px rgba(80,59,30,.055)!important;
+}
+#publicPage #krNewSafety .kr-safety-row i{background:#fff!important;box-shadow:0 4px 10px rgba(64,54,40,.08)!important}
+#publicPage #krNewSafety .kr-band-art{filter:drop-shadow(0 15px 18px rgba(30,26,20,.12))!important}
+#publicPage #krNewSafety .kr-band-art .face{background:linear-gradient(145deg,#343b41,#0d1217)!important;border-color:#252b31!important}
+#publicPage #krNewSafety .kr-safety-action{
+  min-height:46px!important;border-radius:14px!important;background:linear-gradient(100deg,#ff6e15,#ff8e1e)!important;
+  box-shadow:0 11px 25px rgba(255,112,20,.24)!important;font-weight:800!important;
+}
+
+/* Existing Live Crowd and Emergency cards */
+#publicPage #crowdCard.kr-live-crowd-fixed{
+  background:radial-gradient(circle at 90% 12%,rgba(122,91,229,.19),transparent 27%),linear-gradient(145deg,#f5f0ff 0%,#fff 56%,#eee9ff 100%)!important;
+  border-radius:24px!important;box-shadow:0 18px 42px rgba(30,52,85,.09),inset 0 1px 0 rgba(255,255,255,.96)!important;
+}
+#publicPage #crowdCard.kr-live-crowd-fixed h2,#publicPage #emergencyCard h2{font-size:21px!important;letter-spacing:-.035em!important}
+#publicPage #crowdCard.kr-live-crowd-fixed .grid3 button{
+  border-radius:14px!important;min-height:52px!important;font-weight:800!important;box-shadow:0 8px 18px rgba(30,52,85,.07)!important;
+}
+#publicPage #emergencyCard{
+  background:radial-gradient(circle at 88% 14%,rgba(255,88,105,.18),transparent 27%),linear-gradient(145deg,#fff0f3 0%,#fff 58%,#fff3f5 100%)!important;
+  border-radius:24px!important;box-shadow:0 18px 42px rgba(30,52,85,.09),inset 0 1px 0 rgba(255,255,255,.96)!important;
+}
+#publicPage #emergencyCard .red{
+  min-height:68px!important;border-radius:17px!important;background:linear-gradient(105deg,#ff3e49,#d91d29)!important;
+  box-shadow:0 14px 30px rgba(217,29,41,.27),inset 0 1px 0 rgba(255,255,255,.22)!important;
+  font-size:15px!important;font-weight:850!important;
+}
+
+/* Overall polish */
+#publicPage .kr-ref-new-card,#publicPage #crowdCard.kr-live-crowd-fixed,#publicPage #emergencyCard{
+  -webkit-font-smoothing:antialiased!important;text-rendering:optimizeLegibility!important;
+}
+#publicPage .kr-ref-new-card button,#publicPage #emergencyCard button{
+  transition:transform .18s ease,box-shadow .18s ease,filter .18s ease!important;
+}
+#publicPage .kr-ref-new-card button:hover,#publicPage #emergencyCard button:hover{
+  filter:saturate(1.04)!important;transform:translateY(-1px)!important;
+}
+/* =========================================================
+   KUMBH RAKSHAK — FINAL 3-CARD LAYOUT/DIMENSION FIX
+   ONLY changes layout/dimensions of:
+   1. Dashboard header
+   2. Emergency Contacts card
+   3. Volunteer card
+   No content, colors, buttons or functionality changed.
+   ========================================================= */
+
+/* ---------- 1. DASHBOARD HEADER: ONE FULL-WIDTH CARD ---------- */
+#publicPage .premium-dashboard-head{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:316px!important;
+  margin:0 0 12px!important;
+  padding:0!important;
+  display:block!important;
+  position:relative!important;
+  box-sizing:border-box!important;
+  overflow:hidden!important;
+}
+
+#publicPage .premium-dashboard-head > div:first-child{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  min-height:316px!important;
+  height:316px!important;
+  box-sizing:border-box!important;
+}
+
+/* Keep the existing status/login control inside the same header card. */
+#publicPage .premium-dashboard-head > .live-pill{
+  position:absolute!important;
+  right:28px!important;
+  left:auto!important;
+  top:20px!important;
+  bottom:auto!important;
+  width:auto!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  box-sizing:border-box!important;
+}
+
+
+/* ---------- 2. EMERGENCY + VOLUNTEER: EQUAL TWO-COLUMN ROW ---------- */
+#publicPage .kr-new-bottom-row{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:16px!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+}
+
+#publicPage .kr-new-bottom-row > .kr-emergency-fixed,
+#publicPage .kr-new-bottom-row > .kr-volunteer-fixed{
+  grid-column:auto!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:380px!important;
+  min-height:380px!important;
+  max-height:none!important;
+  margin:0!important;
+  padding:0!important;
+  justify-self:stretch!important;
+  align-self:stretch!important;
+  box-sizing:border-box!important;
+}
+
+#publicPage .kr-emergency-fixed .kr-ref-new-inner,
+#publicPage .kr-volunteer-fixed .kr-ref-new-inner{
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:380px!important;
+  max-width:none!important;
+  box-sizing:border-box!important;
+  padding:20px!important;
+}
+
+/* Allow headings/descriptions to use the full card width. */
+#publicPage .kr-emergency-fixed .kr-ref-head,
+#publicPage .kr-volunteer-fixed .kr-ref-head{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  gap:11px!important;
+}
+
+#publicPage .kr-emergency-fixed .kr-ref-head > div:nth-child(2),
+#publicPage .kr-volunteer-fixed .kr-ref-head > div:nth-child(2){
+  min-width:0!important;
+  flex:1 1 auto!important;
+  width:auto!important;
+}
+
+#publicPage .kr-emergency-fixed .kr-ref-head h2,
+#publicPage .kr-volunteer-fixed .kr-ref-head h2{
+  overflow-wrap:anywhere!important;
+  word-break:normal!important;
+}
+
+/* Keep the lower content inside the card instead of overflowing. */
+#publicPage .kr-emergency-fixed .kr-contact-list,
+#publicPage .kr-volunteer-fixed .kr-vol-list{
+  width:100%!important;
+  min-width:0!important;
+}
+
+#publicPage .kr-emergency-fixed .kr-bottom-actions{
+  width:100%!important;
+  min-width:0!important;
+}
+
+
+/* ---------- TABLET ---------- */
+@media(max-width:1100px){
+  #publicPage .premium-dashboard-head{
+    width:100%!important;
+    min-height:300px!important;
+  }
+
+  #publicPage .premium-dashboard-head > div:first-child{
+    width:100%!important;
+    min-height:300px!important;
+    height:300px!important;
+  }
+
+  #publicPage .premium-dashboard-head > .live-pill{
+    right:22px!important;
+    top:18px!important;
+  }
+
+  #publicPage .kr-new-bottom-row{
+    width:100%!important;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+    gap:14px!important;
+  }
+
+  #publicPage .kr-new-bottom-row > .kr-emergency-fixed,
+  #publicPage .kr-new-bottom-row > .kr-volunteer-fixed{
+    height:360px!important;
+    min-height:360px!important;
+  }
+
+  #publicPage .kr-emergency-fixed .kr-ref-new-inner,
+  #publicPage .kr-volunteer-fixed .kr-ref-new-inner{
+    min-height:360px!important;
+  }
+}
+
+
+/* ---------- MOBILE ---------- */
+@media(max-width:760px){
+  #publicPage .premium-dashboard-head{
+    width:100%!important;
+    min-height:245px!important;
+  }
+
+  #publicPage .premium-dashboard-head > div:first-child{
+    width:100%!important;
+    min-height:245px!important;
+    height:245px!important;
+  }
+
+  #publicPage .premium-dashboard-head > .live-pill{
+    right:14px!important;
+    top:14px!important;
+    max-width:calc(100% - 28px)!important;
+  }
+
+  #publicPage .kr-new-bottom-row{
+    width:100%!important;
+    grid-template-columns:1fr!important;
+    gap:12px!important;
+  }
+
+  #publicPage .kr-new-bottom-row > .kr-emergency-fixed,
+  #publicPage .kr-new-bottom-row > .kr-volunteer-fixed{
+    width:100%!important;
+    height:auto!important;
+    min-height:330px!important;
+    max-height:none!important;
+  }
+
+  #publicPage .kr-emergency-fixed .kr-ref-new-inner,
+  #publicPage .kr-volunteer-fixed .kr-ref-new-inner{
+    width:100%!important;
+    height:auto!important;
+    min-height:330px!important;
+    padding:18px!important;
+  }
+}
+</style>
+
+
+<script id="kr-final-bugfix-patch">
+(function(){
+  'use strict';
+  window.__krSafetyLanding=false;
+  const previousShowLanding=window.showLanding;
+  if(typeof previousShowLanding==='function'&&!previousShowLanding.__krWrapped){
+    const wrapped=function(){
+      if(new URLSearchParams(location.search).get('safety')==='1')window.__krSafetyLanding=true;
+      return previousShowLanding.apply(this,arguments);
+    };
+    wrapped.__krWrapped=true; window.showLanding=wrapped;
+  }
+  function guard(name){
+    const fn=window[name];
+    if(typeof fn!=='function'||fn.__krGuarded)return;
+    const w=function(){
+      if(window.__krSafetyLanding&&!document.getElementById('publicPage'))return;
+      return fn.apply(this,arguments);
+    };
+    w.__krGuarded=true; window[name]=w;
+  }
+  ['refreshAccountCorner','renderPublic','renderCharging','renderParking','renderCrowdQuestion','renderOwnerDashboard','renderAccountPanel','applyLanguage'].forEach(guard);
+  if(typeof window.findNearest==='function')window.findService=window.findNearest;
+  if(typeof window.v13RenderBusTimetable==='function'){
+    window.showBusTimetableV13=()=>window.v13RenderBusTimetable();
+    window.showBusTimetableV11=window.showBusTimetableV13;
+  }
+  if(typeof window.expertV11==='function')window.showSafetyGuidanceV11=()=>window.expertV11();
+  function restoreResultIds(){
+    const page=document.getElementById('publicPage'),g=page?.querySelector('.public-dashboard-grid');
+    if(!g)return;
+    const card=needle=>[...g.children].find(c=>(c.textContent||'').replace(/\s+/g,' ').toLowerCase().includes(needle));
+    const ensure=(c,id)=>{
+      if(!c||document.getElementById(id))return;
+      const host=c.querySelector('.kr-ref-inner')||c;
+      const el=document.createElement('div');el.id=id;el.className='kr-ref-result';host.appendChild(el);
+    };
+    ensure(card('nearby services'),'nearestResult');
+    ensure(card('hire a local guide'),'guideResultV11');
+    ensure(card('bus timetable'),'v13BusTimetableResult');
+    ensure(card('expert safety guidance'),'expertV11');
+  }
+  window.__krRestoreResultIds=restoreResultIds;
+  [250,800,1600].forEach(t=>setTimeout(restoreResultIds,t));
+  const accountButton=document.getElementById('accountAction');
+  if(accountButton)accountButton.setAttribute('onclick','handleAccountAction()');
+})();
+</script>
+
+<!-- FINAL STABLE CARD LAYOUT FIX -->
+<style id="kr-final-stable-card-layout-fix">
+/* =========================================================
+   FINAL STABLE CARD LAYOUT
+   Only controls placement/size of the affected dashboard cards.
+   No card content or functionality is changed.
+   ========================================================= */
+
+/* ---------- ACCOUNT + QUICK SERVICES ---------- */
+#publicPage .public-dashboard-grid > .public-account-card.kr-account-with-quick{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1.45fr) minmax(340px,.90fr) !important;
+  gap:16px !important;
+  align-items:stretch !important;
+  box-sizing:border-box !important;
+}
+
+#publicPage .kr-account-with-quick .public-welcome-card{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:316px !important;
+  height:316px !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+}
+
+#publicPage .kr-account-with-quick #krReferenceQuick{
+  position:relative !important;
+  inset:auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:316px !important;
+  height:316px !important;
+  margin:0 !important;
+  padding:16px !important;
+  display:flex !important;
+  flex-direction:column !important;
+  justify-content:flex-start !important;
+  box-sizing:border-box !important;
+  overflow:hidden !important;
+}
+
+#publicPage .kr-account-with-quick #krReferenceQuick .kr-qgrid{
+  width:100% !important;
+  min-width:0 !important;
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
+  gap:8px !important;
+}
+
+#publicPage .kr-account-with-quick #krReferenceQuick .kr-qitem{
+  width:100% !important;
+  min-width:0 !important;
+  min-height:55px !important;
+  height:auto !important;
+  margin:0 !important;
+  padding:7px !important;
+  box-sizing:border-box !important;
+}
+
+/* ---------- FEATURE ROW: CROWD / QR / SAFETY ---------- */
+#publicPage .public-dashboard-grid > .kr-new-feature-row{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:16px !important;
+  margin:0 !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+  align-items:stretch !important;
+  overflow:visible !important;
+}
+
+#publicPage .kr-new-feature-row > .kr-ref-new-card{
+  display:block !important;
+  grid-column:auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  min-height:310px !important;
+  height:310px !important;
+  margin:0 !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+  visibility:visible !important;
+  opacity:1 !important;
+}
+
+#publicPage .kr-new-feature-row > #krNewCrowdReports,
+#publicPage .kr-new-feature-row > #krNewQR,
+#publicPage .kr-new-feature-row > #krNewSafety{
+  position:relative !important;
+  z-index:2 !important;
+}
+
+#publicPage .kr-new-feature-row .kr-ref-new-inner{
+  width:100% !important;
+  height:100% !important;
+  min-width:0 !important;
+  min-height:310px !important;
+  box-sizing:border-box !important;
+}
+
+/* ---------- FEEDBACK ---------- */
+#publicPage .public-dashboard-grid > #krFinalFeedback{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  margin:0 !important;
+  box-sizing:border-box !important;
+  display:block !important;
+  visibility:visible !important;
+}
+
+/* ---------- FINAL TWO CARDS: EMERGENCY + VOLUNTEER ---------- */
+#publicPage .public-dashboard-grid > .kr-new-bottom-row{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:16px !important;
+  margin:0 !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+  align-items:stretch !important;
+  overflow:visible !important;
+}
+
+#publicPage .kr-new-bottom-row > .kr-emergency-fixed,
+#publicPage .kr-new-bottom-row > .kr-volunteer-fixed{
+  display:block !important;
+  grid-column:auto !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  height:380px !important;
+  min-height:380px !important;
+  margin:0 !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  overflow:hidden !important;
+}
+
+#publicPage .kr-new-bottom-row .kr-ref-new-inner{
+  width:100% !important;
+  height:100% !important;
+  min-width:0 !important;
+  min-height:380px !important;
+  box-sizing:border-box !important;
+}
+
+#publicPage .kr-new-bottom-row > .card,
+#publicPage .kr-new-bottom-row > .kr-ref-new-card{
+  justify-self:stretch !important;
+  align-self:stretch !important;
+}
+
+@media(max-width:900px){
+  #publicPage .public-dashboard-grid > .public-account-card.kr-account-with-quick{
+    grid-template-columns:1fr !important;
+  }
+  #publicPage .kr-account-with-quick .public-welcome-card,
+  #publicPage .kr-account-with-quick #krReferenceQuick{
+    height:auto !important;
+    min-height:280px !important;
+  }
+  #publicPage .kr-new-feature-row{
+    grid-template-columns:1fr 1fr !important;
+  }
+  #publicPage .kr-new-feature-row > :first-child{
+    grid-column:1 / -1 !important;
+  }
+}
+
+@media(max-width:760px){
+  #publicPage .public-dashboard-grid > .public-account-card.kr-account-with-quick{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+  #publicPage .kr-account-with-quick .public-welcome-card,
+  #publicPage .kr-account-with-quick #krReferenceQuick{
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+  }
+  #publicPage .kr-account-with-quick #krReferenceQuick .kr-qgrid{
+    grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+  }
+  #publicPage .kr-new-feature-row{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+  #publicPage .kr-new-feature-row > :first-child{
+    grid-column:auto !important;
+  }
+  #publicPage .kr-new-feature-row > .kr-ref-new-card{
+    height:auto !important;
+    min-height:300px !important;
+  }
+  #publicPage .kr-new-feature-row .kr-ref-new-inner{
+    min-height:300px !important;
+  }
+  #publicPage .kr-new-bottom-row{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+  #publicPage .kr-new-bottom-row > .kr-emergency-fixed,
+  #publicPage .kr-new-bottom-row > .kr-volunteer-fixed{
+    height:auto !important;
+    min-height:330px !important;
+  }
+  #publicPage .kr-new-bottom-row .kr-ref-new-inner{
+    min-height:330px !important;
+  }
+}
+</style>
+
+<script id="kr-final-stable-card-layout-fix-js">
+(function(){
+'use strict';
+const escapeHtml=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const $=id=>document.getElementById(id), grid=()=>$('publicPage')?.querySelector('.public-dashboard-grid');
+
+function ensureRows(){
+ const g=grid(); if(!g)return;
+ const account=g.querySelector(':scope > .public-account-card')||g.querySelector(':scope > .card:first-child');
+ const quick=$('krReferenceQuick'); if(account&&quick&&quick.parentElement!==account)account.appendChild(quick);
+ if(account)account.classList.add('kr-account-with-quick');
+
+ const fc=[$('krNewCrowdReports'),$('krNewQR'),$('krNewSafety')].filter(Boolean);
+ let feature=g.querySelector(':scope > .kr-new-feature-row');
+ if(fc.length===3){
+   if(!feature){feature=document.createElement('div');feature.className='kr-new-feature-row';g.appendChild(feature);}
+   fc.forEach(x=>{if(x.parentElement!==feature)feature.appendChild(x)});
+ }
+ const bc=[$('emergencyContactsCard'),$('volunteerApplyPublic')].filter(Boolean);
+ let bottom=g.querySelector(':scope > .kr-new-bottom-row');
+ if(bc.length===2){
+   if(!bottom){bottom=document.createElement('div');bottom.className='kr-new-bottom-row';g.appendChild(bottom);}
+   bc.forEach(x=>{if(x.parentElement!==bottom)bottom.appendChild(x)});
+ }
+ const crowd=$('crowdCard'), feedback=$('krFinalFeedback');
+ if(crowd&&feature&&crowd.parentElement===g&&feature.previousElementSibling!==crowd)crowd.after(feature);
+ if(feature&&feedback&&feedback.parentElement===g&&feedback.previousElementSibling!==feature)feature.after(feedback);
+ if(feedback&&bottom&&bottom.parentElement===g&&bottom.previousElementSibling!==feedback)feedback.after(bottom);
+ else if(!feedback&&feature&&bottom&&bottom.parentElement===g&&bottom.previousElementSibling!==feature)feature.after(bottom);
+ if(feature){feature.style.display='grid';feature.style.gridColumn='1/-1';feature.style.width='100%';feature.style.minWidth='0';}
+ if(bottom){bottom.style.display='grid';bottom.style.gridColumn='1/-1';bottom.style.width='100%';bottom.style.minWidth='0';}
+ bc.forEach(x=>{if(x){x.style.display='block';x.style.visibility='visible';x.style.opacity='1';}});
+ if(typeof window.__krRestoreResultIds==='function')window.__krRestoreResultIds();
+ if(typeof window.__krFixPremiumPlacement==='function')window.__krFixPremiumPlacement();
+ if(typeof window.renderEmergencyContacts==='function')window.renderEmergencyContacts();
+}
+
+function patchEmergency(){
+ window.renderEmergencyContacts=function(){
+   const out=$('krFinalEmergencyContacts')||$('emergencyContactView'); if(!out)return;
+   const user=typeof currentUser!=='undefined'?currentUser:null;
+   const cs=user&&typeof emergencyContacts!=='undefined'?(emergencyContacts[user.id]||[]):[];
+   if(!user){out.innerHTML='<div class="result info">🔒 Login to add and use your personal emergency contacts.</div>';return;}
+   if(!cs.length){out.innerHTML='<div class="result info">No emergency contacts saved yet. Click <b>Edit Contacts</b> to add them.</div>';return;}
+   out.innerHTML=cs.slice(0,2).map((c,i)=>`<div class="kr-contact-row"><span class="ico">●</span><span style="font-size:10px;font-weight:800;color:#19345a">${escapeHtml(c.name||'Contact '+(i+1))}</span><span style="font-size:10px;font-weight:800;color:#19345a">${escapeHtml(c.phone||'Not set')}</span><button class="kr-mini-btn" type="button" onclick="editEmergencyContacts()">✎</button></div>`).join('');
+ };
+ window.editEmergencyContacts=function(){
+   if(typeof currentUser==='undefined'||!currentUser)return openPage('userLoginPage');
+   const out=$('krFinalEmergencyContacts')||$('emergencyContactView');if(!out)return;
+   const cs=typeof emergencyContacts!=='undefined'?(emergencyContacts[currentUser.id]||[]):[],a=cs[0]||{},b=cs[1]||{};
+   const ea=v=>String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+   out.innerHTML=`<input id="editEC1Name" placeholder="Contact 1 name" value="${ea(a.name||'')}"><input id="editEC1Phone" placeholder="Contact 1 phone" value="${ea(a.phone||'')}"><input id="editEC2Name" placeholder="Contact 2 name" value="${ea(b.name||'')}"><input id="editEC2Phone" placeholder="Contact 2 phone" value="${ea(b.phone||'')}"><div class="grid"><button class="green" type="button" onclick="saveEmergencyContacts()">SAVE CONTACTS</button><button class="gray" type="button" onclick="renderEmergencyContacts()">CANCEL</button></div>`;
+ };
+ window.saveEmergencyContacts=function(){
+   if(typeof currentUser==='undefined'||!currentUser||typeof emergencyContacts==='undefined')return;
+   const v=id=>$(id)?.value.trim()||'';
+   emergencyContacts[currentUser.id]=[{name:v('editEC1Name'),phone:v('editEC1Phone')},{name:v('editEC2Name'),phone:v('editEC2Phone')}];
+   if(typeof saveV4==='function')saveV4();else localStorage.setItem('kumbhEmergencyContacts',JSON.stringify(emergencyContacts));
+   window.renderEmergencyContacts();
+ };
+}
+
+function patchAdmin(){
+  window.fillGPS=function(){if(typeof userLatitude==='undefined'||userLatitude===null)return alert('Get your exact location first.');$('newLat').value=userLatitude;$('newLon').value=userLongitude;};
+ window.saveLocation=function(){
+  const type=$('newType')?.value,name=$('newName')?.value.trim(),address=$('newAddress')?.value.trim()||'',lat=Number($('newLat')?.value),lon=Number($('newLon')?.value),charge=$('newCharge')?.value.trim()||'As applicable',st=$('newServiceType')?.value||'other';
+  if(!name||!Number.isFinite(lat)||!Number.isFinite(lon))return alert('Fill name and valid coordinates.');
+  if(lat<-90||lat>90||lon<-180||lon>180)return alert('Invalid latitude/longitude.');
+  if(type==='charging')chargingStations.push({id:'CHG'+Date.now(),name,address,lat,lon,slots:[1,1,1,1,0,0],charge});
+  else if(type==='parking')parkingStations.push({id:'PARK'+Date.now(),name,address,lat,lon,car:[1,1,0,1],bike:[1,0,1,1],ev:false,charge});
+  else services.push({id:'SER'+Date.now(),type:st,name,address,lat,lon,charge});
+  if(typeof save==='function')save();
+  if(typeof renderCharging==='function')renderCharging();
+  if(typeof renderParking==='function')renderParking();
+  alert('Location saved successfully.');showAddLocation();
+ };
+}
+
+function patchRoute(){
+ const old=window.showRoute;
+ if(typeof old==='function'&&!old.__krSafe){
+  const w=function(dest,name,charge){if(!dest||typeof dest.lat!=='number'||typeof dest.lon!=='number')return alert('This location is no longer available. Please refresh the page.');return old.apply(this,arguments)};
+  w.__krSafe=true;window.showRoute=w;
+ }
+}
+function patchOpenPage(){
+ const old=window.openPage;
+ if(typeof old==='function'&&!old.__krFinalWrapper){
+  const w=function(id){const r=old.apply(this,arguments);if(id==='publicPage'){document.body.classList.add('kr-inner-active');[100,400,1000].forEach(t=>setTimeout(ensureRows,t));}else document.body.classList.remove('kr-inner-active');return r};
+  w.__krFinalWrapper=true;window.openPage=w;
+ }
+}
+function start(){patchEmergency();patchAdmin();patchRoute();patchOpenPage();[150,500,1200,2200].forEach(t=>setTimeout(ensureRows,t))}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+})();
+</script>
+
+
+<script id="kr-final-function-integrity">
+/* ==========================================================
+   KUMBH RAKSHAK — FUNCTION INTEGRITY LAYER
+   One global function per feature; compatibility aliases only
+   where an existing button still calls the legacy name.
+   ========================================================== */
+(function(){
+  function installCompatibilityFunctions(){
+    /* The Expert Safety card calls this legacy button name. */
+    if(typeof window.showSafetyGuidanceV11!=='function' &&
+       typeof window.expertV11==='function'){
+      window.showSafetyGuidanceV11=function(){
+        return window.expertV11.apply(this,arguments);
+      };
+    }
+
+    /* Keep the navigation helpers available to inline handlers. */
+    if(typeof window.navigateFromHome!=='function'){
+      window.navigateFromHome=function(targetId){
+        const el=document.getElementById(targetId);
+        if(!el)return;
+        el.scrollIntoView({behavior:'smooth',block:'start'});
+        el.classList.add('kr-focus-target');
+        setTimeout(()=>el.classList.remove('kr-focus-target'),900);
+      };
+    }
+
+    if(typeof window.showAbout!=='function'){
+      window.showAbout=function(){
+        alert('Kumbh Rakshak 2027 — Smart Safety, Help & Navigation Platform.');
+      };
+    }
+  }
+
+  function dedupeResultIds(){
+    const ids=['expertV11','guideResultV11','v13BusTimetableResult','v12BusResult','nearestResult'];
+    ids.forEach(id=>{
+      const nodes=[...document.querySelectorAll('#'+CSS.escape(id))];
+      if(nodes.length<2)return;
+      const visible=nodes.find(n=>{
+        const r=n.getBoundingClientRect();
+        return r.width>0 && r.height>=0 && getComputedStyle(n).display!=='none';
+      })||nodes[nodes.length-1];
+      nodes.forEach(n=>{if(n!==visible)n.removeAttribute('id');});
+    });
+  }
+
+  function runIntegrity(){
+    installCompatibilityFunctions();
+    dedupeResultIds();
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',runIntegrity,{once:true});
+  }else{
+    runIntegrity();
+  }
+  setTimeout(runIntegrity,500);
+  setTimeout(runIntegrity,1400);
+})();
+</script>
+<style id="kr-function-integrity-style">
+.kr-focus-target{outline:3px solid rgba(255,122,24,.45)!important;outline-offset:3px}
+</style>
+
+<script id="kr-final-consolidation-v16">
+/* ================================================================
+   KUMBH RAKSHAK 2027 — FINAL FEATURE CONSOLIDATION V16
+   Purpose: merge later patches without removing earlier features.
+   This is intentionally idempotent so the dashboard can re-render safely.
+================================================================ */
+(function(){
+  'use strict';
+  const $=id=>document.getElementById(id);
+  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+  /* ---------- Volunteer login: supports every credential format used by
+     the older V4/V5/V10/V11 approval flows. ---------- */
+  window.loginVolunteer=function(){
+    const id=($('volunteerId')?.value||'').trim().toUpperCase();
+    const pass=$('volunteerPassword')?.value||'';
+    if(!id){ alert('Enter your Volunteer ID.'); return; }
+
+    if(id==='VOL001' && pass==='1234'){
+      window.volunteerSession={appId:null,volunteerId:'VOL001',id:'VOL001',name:'Demo Volunteer',firstLogin:false};
+      localStorage.setItem('kumbhVolunteerSession',JSON.stringify(window.volunteerSession));
+      if(typeof refreshAccountCorner==='function') refreshAccountCorner();
+      if(typeof openPage==='function') openPage('volunteerPage');
+      if(typeof showVolunteerHome==='function') showVolunteerHome();
+      return;
+    }
+
+    const apps=(typeof volunteerApplications!=='undefined' && Array.isArray(volunteerApplications))
+      ? volunteerApplications
+      : JSON.parse(localStorage.getItem('kumbhVolunteerApplications')||'[]');
+    const a=apps.find(x=>
+      String(x.status||'').toUpperCase()==='APPROVED' &&
+      String(x.volunteerId||x.tempId||x.id||'').trim().toUpperCase()===id &&
+      String(x.password||x.tempPassword||'')===pass
+    );
+    if(!a){ alert('Invalid Volunteer ID or password. Use the credentials issued after approval.'); return; }
+
+    window.volunteerSession={
+      appId:a.id,
+      volunteerId:a.volunteerId||a.tempId||id,
+      id:a.volunteerId||a.tempId||id,
+      name:a.name||'Volunteer',
+      email:a.email||'',
+      phone:a.phone||'',
+      firstLogin:!!(a.firstLogin||a.mustChangePassword)
+    };
+    localStorage.setItem('kumbhVolunteerSession',JSON.stringify(window.volunteerSession));
+    if(typeof saveV4==='function') saveV4();
+    if(typeof refreshAccountCorner==='function') refreshAccountCorner();
+    if(typeof openPage==='function') openPage('volunteerPage');
+    if(a.mustChangePassword||a.firstLogin){
+      if(typeof showChangeVolunteerPassword==='function') setTimeout(showChangeVolunteerPassword,60);
+      else if(typeof showVolunteerHome==='function') setTimeout(showVolunteerHome,60);
+    }else if(typeof showVolunteerHome==='function'){
+      showVolunteerHome();
+    }
+  };
+
+  /* ---------- Volunteer approval: issue both old and new credential names. ---------- */
+  window.approveVolunteer=function(id){
+    const apps=(typeof volunteerApplications!=='undefined')?volunteerApplications:null;
+    if(!Array.isArray(apps)) return alert('Volunteer application system is not available.');
+    const a=apps.find(x=>String(x.id)===String(id));
+    if(!a) return alert('Volunteer application not found.');
+    a.status='APPROVED';
+    const vid=a.volunteerId||a.tempId||('VOL'+Math.floor(100000+Math.random()*899999));
+    const pwd=a.tempPassword||a.password||('K'+Math.floor(1000+Math.random()*8999));
+    a.volunteerId=vid; a.tempId=vid;
+    a.tempPassword=pwd; a.mustChangePassword=true; a.firstLogin=true;
+    a.credentialsDelivered=true;
+    a.credentialsMessage='Approved on '+new Date().toLocaleString()+'. Temporary credentials issued.';
+    if(typeof saveV4==='function') saveV4(); else localStorage.setItem('kumbhVolunteerApplications',JSON.stringify(apps));
+    if(typeof renderVolunteerApplicationsAdmin==='function') renderVolunteerApplicationsAdmin();
+    if(typeof renderOwnerDashboard==='function') setTimeout(renderOwnerDashboard,20);
+    alert('Volunteer approved. ID: '+vid+' | Temporary password: '+pwd);
+  };
+
+  /* ---------- Crowd reporting: location-aware + cleaning + map modules. ---------- */
+  window.reportCrowd=function(level){
+    if(typeof userLatitude!=='undefined' && userLatitude===null){
+      alert('Please turn on GET MY EXACT LOCATION before reporting crowd.');
+      if(typeof getLocation==='function') getLocation();
+      return;
+    }
+    try{
+      const place=typeof nearestKumbhPlace==='function'
+        ? nearestKumbhPlace()
+        : {name:'Kumbh Area'};
+      if(typeof crowdReports!=='undefined' && Array.isArray(crowdReports)){
+        crowdReports.push({
+          place:place.name,level,timestamp:Date.now(),
+          user:(typeof currentUser!=='undefined'&&currentUser?.id)||'GUEST',
+          lat:typeof userLatitude!=='undefined'?Number(userLatitude):null,
+          lon:typeof userLongitude!=='undefined'?Number(userLongitude):null
+        });
+        if(typeof save==='function') save();
+      }
+      if(typeof kcmCaptureGPS==='function') kcmCaptureGPS();
+      if(typeof kcmRender==='function') kcmRender();
+      if(typeof renderCrowdQuestion==='function') renderCrowdQuestion();
+      if(typeof renderCrowdSummary==='function') renderCrowdSummary();
+      if(typeof v12CheckCleaning==='function') setTimeout(()=>v12CheckCleaning(place.name),100);
+    }catch(e){
+      console.warn('Crowd report failed',e);
+      alert('Crowd report could not be saved. Please try again.');
+    }
+  };
+
+  /* ---------- Live location: retain the original tracker, then refresh all
+     location-dependent features once GPS is available. ---------- */
+  const previousLive=window.startLiveLocation;
+  if(typeof previousLive==='function' && !previousLive.__krV16){
+    const live=function(){
+      previousLive.apply(this,arguments);
+      const finish=()=>{
+        try{
+          if(typeof renderCharging==='function') renderCharging();
+          if(typeof renderParking==='function') renderParking();
+          if(typeof renderCrowdQuestion==='function') renderCrowdQuestion();
+          if(typeof renderCrowdSummary==='function') renderCrowdSummary();
+          if(typeof loadWeatherV11==='function') loadWeatherV11();
+          if(typeof expertV11==='function') expertV11();
+          if(typeof kcmCaptureGPS==='function') kcmCaptureGPS();
+          if(typeof kcmRender==='function') kcmRender();
+        }catch(e){console.warn('Location refresh skipped',e)}
+      };
+      setTimeout(finish,700);
+      setTimeout(finish,1800);
+    };
+    live.__krV16=true;
+    window.startLiveLocation=live;
+  }
+
+  /* ---------- Safety QR: one visible QR, with profile + contacts + GPS. ---------- */
+  window.showSafetyRegistration=function(){
+    const out=$('safetyRegistration');
+    if(!out) return;
+    const user=(typeof currentUser!=='undefined')?currentUser:null;
+    if(!user){
+      out.innerHTML='<div class="result danger">🔒 Please login or create an account first.</div>';
+      return;
+    }
+    const contacts=(window.emergencyContacts&&window.currentUser)
+      ? (window.emergencyContacts[user.id]||[]).slice(0,2) : [];
+    const payload={
+      type:'KUMBH_RAKSHAK_SAFETY',
+      safetyId:'SAFETY-'+window.currentUser.id,
+      name:user.name||'',
+      phone:user.phone||'',
+      location:(typeof userLatitude!=='undefined'&&userLatitude!==null&&typeof userLongitude!=='undefined')
+        ? {lat:Number(userLatitude).toFixed(6),lon:Number(userLongitude).toFixed(6)} : null,
+      emergencyContacts:contacts.map(c=>({name:c.name||'',phone:c.phone||''}))
+    };
+    const text=JSON.stringify(payload);
+    localStorage.setItem('kumbhV13SafetyPayload',text);
+    out.innerHTML=`<div class="result success">
+      <b>🛡️ Safety Band QR ready</b><br>
+      <small>One QR contains the owner's name, phone, emergency contacts and latest available location.</small>
+      <div id="mySafetyQR" class="v13-qrbox"></div>
+      <div class="v13-row">
+        <button class="blue" type="button" onclick="v13ShareSafetyProfile?.()">📤 SHARE SAFETY DETAILS</button>
+        <button class="gray" type="button" onclick="v16RefreshSafetyQR()">📍 REFRESH LOCATION & QR</button>
+      </div>
+      <div id="v14QRStatus" class="map-note"></div>
+    </div>`;
+    const host=$('mySafetyQR'),status=$('v14QRStatus');
+    try{
+      if(typeof QRCode==='undefined') throw new Error('QR library did not load');
+      new QRCode(host,{text,width:260,height:260,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel?QRCode.CorrectLevel.M:0});
+      if(status) status.textContent='✅ One high-clarity QR code generated successfully.';
+    }catch(e){ if(status) status.textContent='⚠️ QR could not be generated: '+e.message; }
+  };
+  window.v16RefreshSafetyQR=function(){
+    if(!navigator.geolocation) return window.showSafetyRegistration();
+    navigator.geolocation.getCurrentPosition(
+      p=>{if(typeof userLatitude!=='undefined') userLatitude=p.coords.latitude;
+        if(typeof userLongitude!=='undefined') userLongitude=p.coords.longitude;
+        window.showSafetyRegistration();},
+      ()=>window.showSafetyRegistration(),
+      {enableHighAccuracy:true,timeout:12000,maximumAge:0}
+    );
+  };
+
+  /* ---------- QR scanner: understand the new JSON QR and the older URL QR,
+     while keeping the original service-QR handler for everything else. ---------- */
+  const previousQR=window.handleQR;
+  window.handleQR=function(data){
+    const result=$('qrResult');
+    try{
+      const p=JSON.parse(data);
+      if(p&&p.type==='KUMBH_RAKSHAK_SAFETY'){
+        const contacts=Array.isArray(p.emergencyContacts)?p.emergencyContacts:[];
+        const loc=p.location&&Number.isFinite(Number(p.location.lat))&&Number.isFinite(Number(p.location.lon))
+          ? `<br>📍 <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.location.lat+','+p.location.lon)}" target="_blank" rel="noopener">Open location in Google Maps</a>` : '';
+        const ec=contacts.length?'<h4>🚨 Emergency Contacts</h4>'+contacts.map(c=>`${esc(c.name||'Contact')}: <a href="tel:${encodeURIComponent(c.phone||'')}">${esc(c.phone||'Not available')}</a>`).join('<br>'):'';
+        if(result) result.innerHTML=`<div class="result success"><h3>🛡️ Safety Profile</h3><b>👤 ${esc(p.name||'Safety Band Owner')}</b><br>📞 <a href="tel:${encodeURIComponent(p.phone||'')}">${esc(p.phone||'Not available')}</a>${loc}${ec}<br><small>Safety ID: ${esc(p.safetyId||'')}</small></div>`;
+        return;
+      }
+    }catch(e){}
+    try{
+      const u=new URL(data,location.href),q=u.searchParams;
+      if(q.get('safety')==='1'){
+        const contacts=[1,2].map(i=>({name:q.get('ec'+i+'n')||'',phone:q.get('ec'+i+'p')||''})).filter(x=>x.name||x.phone);
+        const loc=q.get('lat')&&q.get('lon')?`<br>📍 <a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(q.get('lat')+','+q.get('lon'))}" target="_blank" rel="noopener">Get directions to owner</a>`:'';
+        const ec=contacts.length?'<h4>🚨 Emergency Contacts</h4>'+contacts.map(c=>`${esc(c.name||'Contact')}: <a href="tel:${encodeURIComponent(c.phone)}">${esc(c.phone||'Not available')}</a>`).join('<br>'):'';
+        if(result) result.innerHTML=`<div class="result success"><h3>🛡️ Safety Profile</h3><b>👤 ${esc(q.get('name')||'Safety Band Owner')}</b><br>📞 <a href="tel:${encodeURIComponent(q.get('phone')||'')}">${esc(q.get('phone')||'Not available')}</a>${loc}${ec}<br><small>Safety ID: ${esc(q.get('id')||'')}</small></div>`;
+        return;
+      }
+    }catch(e){}
+    if(typeof previousQR==='function') return previousQR(data);
+  };
+
+  /* ---------- Location entry: keep the V15 EV-parking feature and all
+     service types in one implementation. ---------- */
+  window.showAddLocation=function(){
+    const out=$('volunteerContent'); if(!out)return;
+    out.innerHTML=`<div class="card">
+      <h2>➕ Add / Update Location</h2>
+      <select id="newType" onchange="v15ParkingTypeChanged?.()">
+        <option value="bus">🚌 Bus Stop</option><option value="auto">🛺 Auto / Rickshaw Stand</option>
+        <option value="water">💧 Drinking Water</option><option value="toilet">🚻 Toilet</option>
+        <option value="police">🚔 Police Help Centre</option><option value="hospital">🏥 Medical / Hospital</option>
+        <option value="charging">🔋 Phone Charging Station</option><option value="parking">🅿️ Parking</option>
+      </select>
+      <div id="v15EvRow" class="v15-ev-row"><label><input id="newEvAvailable" type="checkbox"> 🔋 EV CHARGER AVAILABLE AT THIS PARKING</label></div>
+      <input id="newName" placeholder="Location Name"><input id="newAddress" placeholder="Address">
+      <input id="newLat" type="number" step="any" placeholder="Latitude"><input id="newLon" type="number" step="any" placeholder="Longitude">
+      <input id="newCharge" placeholder="Charge / Free">
+      <button class="blue" type="button" onclick="v12UseGPS?.()">📍 USE MY CURRENT GPS</button>
+      <button class="green" type="button" onclick="v16SaveLocation()">💾 SAVE LOCATION</button>
+    </div>`;
+    if(typeof v15ParkingTypeChanged==='function') v15ParkingTypeChanged();
+  };
+  window.v16SaveLocation=function(){
+    const type=$('newType')?.value,name=$('newName')?.value.trim(),address=$('newAddress')?.value.trim()||'';
+    const lat=parseFloat($('newLat')?.value),lon=parseFloat($('newLon')?.value),charge=$('newCharge')?.value.trim()||'As applicable';
+    const ev=!!$('newEvAvailable')?.checked;
+    if(!name||!Number.isFinite(lat)||!Number.isFinite(lon)) return alert('Enter location name and exact GPS coordinates.');
+    if(type==='charging') chargingStations.push({id:'CHG'+Date.now(),name,address,lat,lon,slots:[1,1,1,1,0,0],charge});
+    else if(type==='parking') parkingStations.push({id:'PARK'+Date.now(),name,address,lat,lon,car:[1,1,1,0,0,0],bike:[1,1,1,1,0,0],ev,charge});
+    else services.push({id:'SER'+Date.now(),type,name,address,lat,lon,charge});
+    if(typeof save==='function') save();
+    if(typeof renderCharging==='function') renderCharging();
+    if(typeof renderParking==='function') renderParking();
+    if(typeof renderPublic==='function') renderPublic();
+    alert('Location saved successfully.');
+    window.showAddLocation();
+  };
+
+  /* ---------- Owner dashboard: show both application and guide sections. ---------- */
+  const previousOwner=window.renderOwnerDashboard;
+  if(typeof previousOwner==='function' && !previousOwner.__krV16){
+    const owner=function(){
+      const r=previousOwner.apply(this,arguments);
+      setTimeout(()=>{
+        if(typeof renderVolunteerApplicationsAdmin==='function') renderVolunteerApplicationsAdmin();
+        if(typeof renderGuidesV11==='function') renderGuidesV11();
+      },30);
+      return r;
+    };
+    owner.__krV16=true;window.renderOwnerDashboard=owner;
+  }
+
+  /* ---------- Navigation: one wrapper around the original page switch. ---------- */
+  const __krOriginalOpenPage=window.openPage;
+  if(typeof __krOriginalOpenPage==='function' && !__krOriginalOpenPage.__krV16){
+    const __krOpenPage=function(id){
+      const r=__krOriginalOpenPage.apply(this,arguments);
+      try{
+        if(id==='publicPage') document.body.classList.add('kr-inner-active');
+        else document.body.classList.remove('kr-inner-active');
+        if(typeof refreshAccountCorner==='function') setTimeout(refreshAccountCorner,30);
+      }catch(e){}
+      return r;
+    };
+    __krOpenPage.__krV16=true; window.openPage=__krOpenPage;
+  }
+
+  /* ---------- Remove only true duplicate result nodes. Keep the visible/latest
+     node and never remove functional cards. ---------- */
+  function dedupeResults(){
+    ['expertV11','guideResultV11','v13BusTimetableResult','v12BusResult','nearestResult'].forEach(id=>{
+      const nodes=[...document.querySelectorAll('#'+CSS.escape(id))];
+      if(nodes.length<2)return;
+      const keep=nodes.find(n=>{const cs=getComputedStyle(n);return cs.display!=='none'&&cs.visibility!=='hidden';})||nodes[nodes.length-1];
+      nodes.forEach(n=>{if(n!==keep)n.removeAttribute('id');});
+    });
+  }
+
+  /* ---------- Make the premium crowd card the single visible crowd UI. Move
+     the real controls/results into it, then hide the older duplicate card. ---------- */
+  function consolidateCrowdCard(){
+    const old=$('crowdCard'),modern=$('krNewCrowdReports');
+    if(!old||!modern)return;
+    const q=old.querySelector('#nearbyPlaceQuestion'),buttons=old.querySelector('.grid3'),result=old.querySelector('#crowdResult');
+    if(q && q.parentElement!==modern) modern.appendChild(q);
+    if(buttons && buttons.parentElement!==modern) modern.appendChild(buttons);
+    if(result && result.parentElement!==modern) modern.appendChild(result);
+    const loc=modern.querySelector('.kr-crowd-location span:first-child');
+    if(loc && typeof nearestKumbhPlace==='function'){
+      try{loc.textContent='📍 '+nearestKumbhPlace().name;}catch(e){}
+    }
+    old.style.display='none';
+    const empty=modern.querySelector('.kr-crowd-empty');
+    if(empty && (q||buttons||result)) empty.style.display='none';
+    const mapBtn=modern.querySelector('.kr-crowd-map-btn');
+    if(mapBtn) mapBtn.textContent='🗺️ View Crowd Map & Reports →';
+  }
+
+  function consolidate(){
+    try{consolidateCrowdCard();}catch(e){console.warn('Crowd consolidation skipped',e)}
+    try{dedupeResults();}catch(e){}
+  }
+
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(consolidate,250),{once:true});
+  else setTimeout(consolidate,250);
+  [900,1800,3500].forEach(t=>setTimeout(consolidate,t));
+
+  /* A small, targeted observer handles cards/results created later without
+     moving the dashboard or creating the old body-wide observer loop. */
+  let timer=0;
+  const observer=new MutationObserver(()=>{
+    clearTimeout(timer);
+    timer=setTimeout(consolidate,120);
+  });
+  if(document.body) observer.observe(document.body,{childList:true,subtree:true});
+  else document.addEventListener('DOMContentLoaded',()=>observer.observe(document.body,{childList:true,subtree:true}),{once:true});
+})();
+</script>
+</body>
+</html>
