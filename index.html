@@ -12892,3 +12892,201 @@ html.kr-force-mobile #publicPage .premium-dashboard-head{
   }
 })();
 </script>
+
+
+
+<!-- ============================================================
+     BUS TIMETABLE → NEARBY SERVICES RELOCATION
+     Keeps the existing timetable functionality, but places the
+     Bus Timetable card beside Nearby Services on desktop/tablet.
+     On phones the two cards stack naturally.
+     ============================================================ -->
+<style id="kr-bus-nearby-relocation-css">
+#publicPage .kr-nearby-bus-row{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;
+  gap:18px!important;
+  align-items:stretch!important;
+  box-sizing:border-box!important;
+}
+#publicPage .kr-nearby-bus-row > #nearbyServicesCard,
+#publicPage .kr-nearby-bus-row > .kr-ref-bus{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  grid-column:auto!important;
+  box-sizing:border-box!important;
+  margin:0!important;
+}
+#publicPage .kr-nearby-bus-row > .kr-ref-bus{
+  min-height:285px!important;
+}
+@media(max-width:760px){
+  #publicPage .kr-nearby-bus-row{
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:14px!important;
+  }
+  #publicPage .kr-nearby-bus-row > #nearbyServicesCard,
+  #publicPage .kr-nearby-bus-row > .kr-ref-bus{
+    grid-column:1 / -1!important;
+    width:100%!important;
+  }
+}
+html.kr-force-mobile #publicPage .kr-nearby-bus-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-column:1 / -1!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  gap:14px!important;
+}
+html.kr-force-mobile #publicPage .kr-nearby-bus-row > #nearbyServicesCard,
+html.kr-force-mobile #publicPage .kr-nearby-bus-row > .kr-ref-bus{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+</style>
+<script id="kr-bus-nearby-relocation-js">
+(function(){
+  'use strict';
+  function relocate(){
+    const page=document.getElementById('publicPage');
+    const grid=page?.querySelector('.public-dashboard-grid');
+    if(!page || !grid) return;
+
+    const services=document.getElementById('nearbyServicesCard');
+    const bus=grid.querySelector('.kr-ref-bus');
+    if(!services || !bus) return;
+
+    // Already arranged.
+    if(services.parentElement?.classList.contains('kr-nearby-bus-row') &&
+       bus.parentElement===services.parentElement){
+      return;
+    }
+
+    // The previous design placed Bus Timetable inside the 3-card top row.
+    // Remove it from that wrapper first, without deleting the card.
+    const oldRow=bus.closest('.kr-ref-top-row');
+    if(oldRow) oldRow.removeChild(bus);
+
+    // Remove empty/underfilled old reference row when appropriate.
+    if(oldRow){
+      const remaining=[...oldRow.children];
+      if(!remaining.length){
+        oldRow.remove();
+      }else if(remaining.length===2){
+        oldRow.style.setProperty('grid-template-columns','repeat(2,minmax(0,1fr))','important');
+      }
+    }
+
+    const row=document.createElement('div');
+    row.className='kr-nearby-bus-row';
+    row.dataset.krRelocated='1';
+
+    // Put the new row exactly where Nearby Services currently sits.
+    services.parentNode.insertBefore(row,services);
+    row.append(services,bus);
+
+    services.classList.add('kr-ref-services');
+    bus.classList.add('kr-ref-bus-nearby');
+
+    // The final mobile lock also applies when Safari is using a desktop
+    // style viewport, so force the row to remain a single column there.
+    if(document.documentElement.classList.contains('kr-force-mobile')){
+      row.style.setProperty('grid-template-columns','minmax(0,1fr)','important');
+    }
+  }
+
+  function boot(){
+    relocate();
+    [150,500,1000,1800,3000].forEach(t=>setTimeout(relocate,t));
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',boot,{once:true});
+  }else{
+    boot();
+  }
+
+  new MutationObserver(()=>{
+    setTimeout(relocate,40);
+  }).observe(document.body,{childList:true,subtree:true});
+})();
+</script>
+
+<style id="kr-safety-band-final-fix">
+#krSafetyHost{display:block!important;width:100%;min-width:0;box-sizing:border-box;margin-top:12px}
+#krSafetyHost .kr-safety-final-panel{padding:14px;border-radius:16px;background:rgba(255,255,255,.94);border:1px solid #e1e7ef;box-sizing:border-box}
+#krSafetyHost .kr-safety-final-panel h3{margin:0 0 8px;color:#102a54}
+#krSafetyHost .kr-safety-final-list{display:grid;gap:9px;margin-top:12px}
+#krSafetyHost .kr-safety-final-item{padding:11px;border:1px solid #dfe6ee;border-radius:12px;background:#fff}
+#krSafetyHost .kr-safety-final-qr{display:flex;justify-content:center;align-items:center;background:#fff;padding:12px;border-radius:14px;margin:12px auto;min-height:220px}
+#krSafetyHost .kr-safety-final-qr canvas,#krSafetyHost .kr-safety-final-qr img{display:block!important;width:200px!important;height:200px!important;max-width:100%!important}
+</style>
+<script id="kr-safety-band-final-fix-js">
+(function(){
+  'use strict';
+  function host(){return document.getElementById('krSafetyHost')||document.getElementById('safetyRegistration');}
+  function user(){
+    try{if(typeof currentUser!=='undefined'&&currentUser)return currentUser;}catch(e){}
+    try{return JSON.parse(localStorage.getItem('kumbhCurrentUser')||'null');}catch(e){return null;}
+  }
+  function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+  function bands(){try{const x=JSON.parse(localStorage.getItem('kumbhSafetyBands')||'[]');return Array.isArray(x)?x:[]}catch(e){return[]}}
+  function save(a){localStorage.setItem('kumbhSafetyBands',JSON.stringify(a));}
+  function loc(){
+    try{if(typeof userLatitude!=='undefined'&&typeof userLongitude!=='undefined'&&userLatitude!==null&&userLongitude!==null)return {lat:Number(userLatitude),lon:Number(userLongitude)}}catch(e){}
+    return null;
+  }
+  function list(h,u){
+    const el=h.querySelector('#krSafetyFinalList'); if(!el)return;
+    const a=bands().filter(x=>x.ownerId===u.id);
+    el.innerHTML=a.length?a.map(x=>`<div class="kr-safety-final-item"><b>🛡️ ${esc(x.name)}</b><br><small>${esc(x.category)} • Safety ID: <b>${esc(x.id)}</b></small>${x.phone?`<br><small>📞 ${esc(x.phone)}</small>`:''}<br><button class="blue small" type="button" onclick="krShowSafetyBandQR('${esc(x.id)}')">VIEW QR</button></div>`).join(''):'<div class="result info">No Safety Band registered yet.</div>';
+  }
+  function qr(h,b){
+    const box=h.querySelector('#krSafetyFinalQR');if(!box)return;box.innerHTML='';
+    const payload=JSON.stringify({type:'KUMBH_RAKSHAK_SAFETY_BAND',id:b.id,ownerId:b.ownerId,ownerName:b.ownerName,name:b.name,category:b.category,phone:b.phone||'',relation:b.relation||'',lat:b.location?.lat??null,lon:b.location?.lon??null});
+    localStorage.setItem('kumbhV13SafetyPayload',payload);
+    if(typeof QRCode!=='function'){box.innerHTML='<div class="result warning">QR generator is unavailable. Refresh the page and try again.</div>';return;}
+    try{new QRCode(box,{text:payload,width:200,height:200});}catch(e){box.innerHTML='<div class="result danger">QR generation failed. Please refresh and try again.</div>';}
+  }
+  window.krShowSafetyBandQR=function(id){
+    const u=user(),h=host();if(!u||!h)return;
+    const b=bands().find(x=>x.id===id&&x.ownerId===u.id);if(!b)return alert('Safety Band not found.');
+    const old=h.querySelector('.kr-safety-final-qr-panel');if(old)old.remove();
+    const p=document.createElement('div');p.className='kr-safety-final-panel kr-safety-final-qr-panel';p.innerHTML=`<h3>📱 ${esc(b.name)} — Safety Band QR</h3><div id="krSafetyFinalQR" class="kr-safety-final-qr"></div><button class="green" type="button" onclick="krShareSafetyBand('${esc(b.id)}')">📤 SHARE SAFETY PROFILE</button>`;h.appendChild(p);qr(p,b);
+  };
+  window.krShareSafetyBand=function(id){
+    const u=user(),b=bands().find(x=>x.id===id&&x.ownerId===u?.id);if(!b)return alert('Safety Band not found.');
+    const location=b.location?.lat!=null?`https://www.google.com/maps?q=${b.location.lat},${b.location.lon}`:'Location unavailable';
+    const text=`🛡️ Kumbh Rakshak Safety Band\nName: ${b.name}\nCategory: ${b.category}\nSafety ID: ${b.id}\nContact: ${b.phone||'Not available'}\nLocation: ${location}`;
+    if(navigator.share)navigator.share({title:'Kumbh Rakshak Safety Band',text}).catch(()=>{});else if(navigator.clipboard)navigator.clipboard.writeText(text).then(()=>alert('Safety Band details copied.'));else alert(text);
+  };
+  window.showSafetyRegistration=function(){
+    const h=host();if(!h){alert('Safety Band panel is not available. Please refresh the page.');return;}
+    h.style.display='block';h.style.visibility='visible';h.style.width='100%';
+    const u=user();
+    if(!u){h.innerHTML='<div class="kr-safety-final-panel"><h3>🔒 Login Required</h3><p>Please login or create an account before registering a Safety Band.</p><button class="blue" type="button" onclick="openPage(\'userLoginPage\')">👤 LOGIN / CREATE ACCOUNT</button></div>';h.scrollIntoView({behavior:'smooth',block:'nearest'});return;}
+    h.innerHTML='<div class="kr-safety-final-panel"><h3>🛡️ Register / View Safety Band</h3><p>Register a child or elderly family member and create their Safety Band QR.</p><select id="krSafetyFinalCategory"><option value="Child">👶 Child</option><option value="Elderly">👴 Elderly</option></select><input id="krSafetyFinalName" placeholder="Child / elderly person\'s name"><input id="krSafetyFinalPhone" type="tel" placeholder="Emergency / contact phone"><input id="krSafetyFinalRelation" placeholder="Relation (Parent, Son, Daughter, etc.)"><button class="orange" type="button" onclick="krRegisterSafetyBand()">🛡️ REGISTER SAFETY BAND</button><div id="krSafetyFinalList" class="kr-safety-final-list"></div></div>';
+    list(h,u);h.scrollIntoView({behavior:'smooth',block:'nearest'});
+  };
+  window.krRegisterSafetyBand=function(){
+    const u=user(),h=host();if(!u){window.showSafetyRegistration();return;}
+    const name=(document.getElementById('krSafetyFinalName')?.value||'').trim(),phone=(document.getElementById('krSafetyFinalPhone')?.value||'').trim(),category=document.getElementById('krSafetyFinalCategory')?.value||'Child',relation=(document.getElementById('krSafetyFinalRelation')?.value||'').trim();
+    if(!name)return alert('Please enter the child / elderly person\'s name.');
+    if(!phone)return alert('Please enter a contact phone number.');
+    const b={id:'SB-'+Date.now().toString(36).toUpperCase(),ownerId:u.id,ownerName:u.name||'',name,phone,category,relation,location:loc(),createdAt:new Date().toISOString()};
+    const a=bands();a.push(b);save(a);
+    h.innerHTML=`<div class="kr-safety-final-panel"><div class="result success"><b>✓ Safety Band registered successfully.</b><br>${esc(b.name)} • ${esc(b.category)}<br>Safety ID: <b>${esc(b.id)}</b></div><h3 style="margin-top:14px">📱 Safety Band QR</h3><div id="krSafetyFinalQR" class="kr-safety-final-qr"></div><button class="green" type="button" onclick="krShareSafetyBand('${esc(b.id)}')">📤 SHARE SAFETY PROFILE</button><button class="purple" type="button" onclick="showSafetyRegistration()">← VIEW MY SAFETY BANDS</button></div>`;
+    qr(h,b);
+  };
+})();
+</script>
