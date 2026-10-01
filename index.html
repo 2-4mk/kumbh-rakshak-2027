@@ -9971,3 +9971,96 @@ body:has(#publicPage.active) .container{
   mo.observe(document.body,{subtree:true,childList:true});
 })();
 </script>
+
+
+<style id="kr-final-layout-fix">
+/* FINAL STRUCTURE FIX:
+   Premium crowd + charging + parking are full-width dashboard rows.
+   They must never be squeezed into the parent's 12-column cells.
+*/
+#publicPage .public-dashboard-grid > #krPremiumCrowdSection,
+#publicPage .public-dashboard-grid > #krPremiumServiceSection{
+  grid-column:1 / -1 !important;
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  margin:0 !important;
+  padding:0 !important;
+  box-sizing:border-box !important;
+}
+#publicPage #krPremiumCrowdSection .kr-premium-card,
+#publicPage #krPremiumServiceSection .kr-premium-card{
+  width:100% !important;
+  min-width:0 !important;
+  max-width:none !important;
+  box-sizing:border-box !important;
+}
+#publicPage #krPremiumServiceSection{
+  display:grid !important;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr) !important;
+  gap:18px !important;
+  align-items:stretch !important;
+}
+#publicPage #krPremiumServiceSection > .kr-premium-card{
+  grid-column:auto !important;
+}
+@media(max-width:900px){
+  #publicPage #krPremiumServiceSection{
+    grid-template-columns:1fr !important;
+  }
+}
+
+/* Keep the original dashboard cards compact instead of stretching huge empty rows. */
+#publicPage .public-dashboard-grid > .card{
+  align-self:start !important;
+}
+
+/* Premium sections should appear before the lower emergency/volunteer/action cards. */
+#publicPage #krPremiumCrowdSection,
+#publicPage #krPremiumServiceSection{
+  position:relative !important;
+  z-index:2 !important;
+}
+</style>
+<script id="kr-final-layout-fix-js">
+(function(){
+  function fixPremiumPlacement(){
+    const page=document.getElementById('publicPage');
+    const grid=page && page.querySelector('.public-dashboard-grid');
+    const crowd=document.getElementById('krPremiumCrowdSection');
+    const services=document.getElementById('krPremiumServiceSection');
+    if(!grid || !crowd || !services) return;
+
+    /* Move the reference sections to a proper full-width position.
+       Emergency card is a reliable boundary before the lower action cards. */
+    const emergency=document.getElementById('emergencyCard');
+    if(emergency && emergency.parentElement===grid){
+      grid.insertBefore(crowd, emergency);
+      grid.insertBefore(services, emergency);
+    }else{
+      /* Fallback: keep them as full-width grid rows. */
+      grid.appendChild(crowd);
+      grid.appendChild(services);
+    }
+
+    crowd.style.gridColumn='1 / -1';
+    services.style.gridColumn='1 / -1';
+    crowd.style.width='100%';
+    services.style.width='100%';
+  }
+
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(fixPremiumPlacement,300);
+    setTimeout(fixPremiumPlacement,900);
+    setTimeout(fixPremiumPlacement,1800);
+    setTimeout(fixPremiumPlacement,3000);
+  });
+
+  const obs=new MutationObserver(function(){
+    if(document.getElementById('krPremiumCrowdSection')){
+      fixPremiumPlacement();
+    }
+  });
+  obs.observe(document.body,{childList:true,subtree:true});
+})();
+</script>
