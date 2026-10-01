@@ -8974,202 +8974,8 @@ body:has(#publicPage.active) .container{
 })();
 </script>
 
-<script id="kr-premium-reference-js">
-(function(){
-  function findCardByText(text){
-    const cards=[...document.querySelectorAll('#publicPage .card')];
-    return cards.find(c=>(c.textContent||'').toLowerCase().includes(text.toLowerCase()));
-  }
-  function stationData(){
-    return {
-      charging: Array.isArray(chargingStations)?chargingStations:[],
-      parking: Array.isArray(parkingStations)?parkingStations:[]
-    };
-  }
-  function safeDist(a){
-    try{
-      if(userLatitude==null || userLongitude==null) return null;
-      return window.formatKm(window.straightDistance(userLatitude,userLongitude,a.lat,a.lon));
-    }catch(e){return null}
-  }
-  function stationPhotoClass(type){ return type==='parking'?'kr-station-photo kr-parking-photo':'kr-station-photo'; }
+<!-- Removed obsolete kr-premium-reference-js: it generated duplicate Crowd/Charging/Parking cards. -->
 
-  function chargingHTML(){
-    const {charging}=stationData();
-    if(!charging.length) return '<div class="kr-station"><b>No charging stations available.</b></div>';
-    const s=charging[0];
-    const free=s.slots.filter(Boolean).length;
-    const total=s.slots.length;
-    const dist=safeDist(s);
-    return `
-      <div class="kr-stat-row">
-        <div class="kr-stat green"><div class="sicon">⚡</div><div><b>${total}</b><span>Total Points</span></div></div>
-        <div class="kr-stat green"><div class="sicon">🟢</div><div><b>${free}</b><span>Available</span></div></div>
-        <div class="kr-stat red"><div class="sicon">🔴</div><div><b>${total-free}</b><span>Occupied</span></div></div>
-        <div class="kr-stat"><div class="sicon">₹</div><div><b>${s.charge||'—'}</b><span>Typical Charge</span></div></div>
-      </div>
-      <div class="kr-station">
-        <div class="kr-station-top">
-          <div class="${stationPhotoClass('charging')}"></div>
-          <div class="kr-station-main">
-            <span class="kr-pill">🔋 ${free}/${total} Available</span>
-            <h3>${s.name}</h3>
-            <div class="kr-meta">
-              <span>📍 ${s.address}</span>
-              <span>◷ <b>${dist||'—'} away</b></span>
-              <span>₹ <b>${s.charge||'—'}</b></span>
-            </div>
-          </div>
-          <div style="font-size:30px;color:#1c6fd2">›</div>
-        </div>
-        <div style="margin-top:15px;font-weight:850;color:#13294f">Charging Points</div>
-        <div class="kr-slots">
-          ${s.slots.map((x,i)=>`<div class="kr-slot ${x?'free':'busy'}"><strong>${String(i+1).padStart(2,'0')}</strong><small>${x?'Available':'Occupied'}</small></div>`).join('')}
-        </div>
-        <button class="kr-route" onclick="showRoute(chargingStations.find(x=>x.id==='${s.id}'),chargingStations.find(x=>x.id==='${s.id}').name,chargingStations.find(x=>x.id==='${s.id}').charge)">🗺️ &nbsp; View Exact Route & Time &nbsp; →</button>
-      </div>`;
-  }
-
-  function parkingHTML(){
-    const {parking}=stationData();
-    if(!parking.length) return '<div class="kr-station"><b>No parking locations available.</b></div>';
-    const s=parking[0];
-    const carFree=s.car.filter(Boolean).length, bikeFree=s.bike.filter(Boolean).length;
-    const carTotal=s.car.length, bikeTotal=s.bike.length;
-    const dist=safeDist(s);
-    const slots=(arr,prefix)=>arr.map((x,i)=>`<div class="kr-slot ${x?'free':'busy'}"><strong>${prefix}${i+1}</strong><small>${x?'Free':'Full'}</small></div>`).join('');
-    return `
-      <div class="kr-stat-row">
-        <div class="kr-stat"><div class="sicon">🚗</div><div><b>${carTotal}</b><span>Car Slots</span></div></div>
-        <div class="kr-stat"><div class="sicon">🏍️</div><div><b>${bikeTotal}</b><span>Bike Slots</span></div></div>
-        <div class="kr-stat green"><div class="sicon">🟢</div><div><b>${carFree+ bikeFree}</b><span>Available</span></div></div>
-        <div class="kr-stat red"><div class="sicon">🔴</div><div><b>${(carTotal-carFree)+(bikeTotal-bikeFree)}</b><span>Occupied</span></div></div>
-      </div>
-      <div class="kr-station">
-        <div class="kr-station-top">
-          <div class="${stationPhotoClass('parking')}"></div>
-          <div class="kr-station-main">
-            <span class="kr-pill ${s.ev?'':'red'}">${s.ev?'🔋 EV Charger':'🚫 No EV Charger'}</span>
-            <h3>${s.name}</h3>
-            <div class="kr-meta">
-              <span>📍 ${s.address}</span>
-              <span>◷ <b>${dist||'—'} away</b></span>
-              <span>🚗 <b>${carFree}/${carTotal} free</b></span>
-            </div>
-          </div>
-          <div style="font-size:30px;color:#1c6fd2">›</div>
-        </div>
-        <div class="kr-parking-cols">
-          <div class="kr-parking-col"><h4>🚗 Car Parking (${carFree}/${carTotal} free)</h4><div class="kr-slots">${slots(s.car,'C')}</div></div>
-          <div class="kr-parking-col"><h4>🏍️ Bike Parking (${bikeFree}/${bikeTotal} free)</h4><div class="kr-slots">${slots(s.bike,'B')}</div></div>
-        </div>
-        <button class="kr-route" onclick="showRoute(parkingStations.find(x=>x.id==='${s.id}'),parkingStations.find(x=>x.id==='${s.id}').name,parkingStations.find(x=>x.id==='${s.id}').charge)">🗺️ &nbsp; View Exact Route & Time &nbsp; →</button>
-      </div>`;
-  }
-
-  function crowdHTML(){
-    let reports=Array.isArray(crowdReports)?crowdReports:[];
-    let place={name:'Ramkund'};
-    try{ place=window.nearestKumbhPlace?window.nearestKumbhPlace():place }catch(e){}
-    const current=reports.filter(r=>r.place===place.name);
-    const counts={low:0,medium:0,high:0};
-    current.forEach(r=>{if(counts[r.level]!=null)counts[r.level]++});
-    const tracked=Math.max(18,current.length);
-    const high=Math.max(3,counts.high);
-    const upcoming=2;
-    const low=Math.max(11,counts.low);
-    return `
-      <div class="kr-crowd-wrap">
-        <div class="kr-crowd-location">📍 You are viewing: <b>${place.name}, Nashik</b> <span class="kr-live-badge">Live data</span></div>
-        <div class="kr-crowd-levels">
-          <button class="kr-crowd-level low" onclick="reportCrowd('low')"><span class="ci">👥</span><span><b>Low Crowd</b><small>Comfortable movement</small></span><strong style="margin-left:auto;font-size:27px">›</strong></button>
-          <button class="kr-crowd-level mid" onclick="reportCrowd('medium')"><span class="ci">👥</span><span><b>Moderate Crowd</b><small>Some waiting expected</small></span><strong style="margin-left:auto;font-size:27px">›</strong></button>
-          <button class="kr-crowd-level high" onclick="reportCrowd('high')"><span class="ci">👥</span><span><b>Very Crowded</b><small>Heavy congestion</small></span><strong style="margin-left:auto;font-size:27px">›</strong></button>
-        </div>
-        <div class="kr-crowd-map">
-          <div class="kr-map-label ram">📍 Ramkund</div>
-          <div class="kr-map-label pan">📍 Panchavati</div>
-          <div class="kr-map-label kal">📍 Kalaram Temple</div>
-          <div class="kr-map-label tap">📍 Tapovan</div>
-          <div class="kr-map-controls"><button class="kr-map-control">＋</button><button class="kr-map-control">−</button><button class="kr-map-control">⌾</button></div>
-          <div class="kr-crowd-map-legend">Low <span class="kr-crowd-gradient"></span> High</div>
-        </div>
-        <div class="kr-crowd-stats">
-          <div class="kr-crowd-stat purple"><div class="icon">👥</div><div><b>${tracked}</b><span>Pilgrims Tracked</span></div></div>
-          <div class="kr-crowd-stat red"><div class="icon">👥</div><div><b>${high}</b><span>High Crowd Zones</span></div></div>
-          <div class="kr-crowd-stat orange"><div class="icon">👥</div><div><b>${upcoming}</b><span>Upcoming Zones</span></div></div>
-          <div class="kr-crowd-stat green"><div class="icon">👥</div><div><b>${low}</b><span>Low Crowd Zones</span></div></div>
-        </div>
-        <div class="kr-crowd-alert">🔴 &nbsp; <b>${counts.high?'High crowd is currently present':'Crowd information is available'} at ${place.name} area.</b><br><span style="margin-left:28px">Red zones indicate higher current density. Consider alternative routes for comfortable movement.</span></div>
-        <div id="crowdResult" style="margin-top:10px"></div>
-      </div>`;
-  }
-
-  function build(){
-    const page=document.getElementById('publicPage');
-    if(!page || !page.classList.contains('active')) return;
-
-    const grid=page.querySelector('.public-dashboard-grid');
-    if(!grid) return;
-
-    const crowd=findCardByText('Live Crowd Information');
-    const charging=document.getElementById('chargingCard');
-    const parking=findCardByText('Car & Bike Parking');
-    if(!crowd || !charging || !parking) return;
-
-    // Avoid rebuilding repeatedly.
-    if(document.getElementById('krPremiumCrowdSection')) return;
-
-    const crowdSection=document.createElement('section');
-    crowdSection.id='krPremiumCrowdSection';
-    crowdSection.className='kr-premium-section';
-    crowdSection.innerHTML=`
-      <div class="kr-premium-card">
-        <div class="kr-p-head">
-          <div class="kr-p-title"><div class="kr-p-icon" style="background:linear-gradient(145deg,#eeeaff,#ddd6ff)">📊</div><div><h2>Live Crowd Information</h2><p>Get real-time crowd density, movement and zone information around Ramkund.</p></div></div>
-          <button class="kr-map-btn">☀️ 32°C &nbsp; | &nbsp; Clear Sky</button>
-        </div>
-        ${crowdHTML()}
-      </div>`;
-
-    const serviceSection=document.createElement('section');
-    serviceSection.id='krPremiumServiceSection';
-    serviceSection.className='kr-premium-section grid-2';
-
-    serviceSection.innerHTML=`
-      <div class="kr-premium-card kr-charging">
-        <div class="kr-p-head"><div class="kr-p-title"><div class="kr-p-icon">🔋</div><div><h2>Phone Charging Stations</h2><p>Find nearby charging points, check availability, route and charges.</p></div></div><button class="kr-map-btn" onclick="navigateFromHome('locationCard')">🗺️ View on Map&nbsp; →</button></div>
-        <div id="krChargingBody">${chargingHTML()}</div>
-      </div>
-      <div class="kr-premium-card kr-parking">
-        <div class="kr-p-head"><div class="kr-p-title"><div class="kr-p-icon">🅿️</div><div><h2>Car & Bike Parking</h2><p>Check real-time availability for car and bike parking spaces.</p></div></div><button class="kr-map-btn" onclick="navigateFromHome('locationCard')">🗺️ View on Map&nbsp; →</button></div>
-        <div id="krParkingBody">${parkingHTML()}</div>
-      </div>`;
-
-    // Place the premium section after the existing location/weather area.
-    grid.appendChild(crowdSection);
-    grid.appendChild(serviceSection);
-
-    crowd.style.display='none';
-    charging.style.display='none';
-    parking.style.display='none';
-  }
-
-  function refresh(){
-    const c=document.getElementById('krChargingBody');
-    const p=document.getElementById('krParkingBody');
-    if(c) c.innerHTML=chargingHTML();
-    if(p) p.innerHTML=parkingHTML();
-  }
-
-  document.addEventListener('DOMContentLoaded',()=>{
-    setTimeout(build,400);
-    setTimeout(build,1200);
-    setTimeout(build,2500);
-    setInterval(()=>{ if(document.getElementById('krPremiumCrowdSection')) refresh(); },5000);
-  });
-})();
-</script>
 <style id="kr-location-weather-reference-v4">
 /* LOCATION + WEATHER — visual language based on the supplied reference */
 #publicPage .public-dashboard-grid > #locationCard.kr-lw-location{
@@ -12217,5 +12023,120 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
   else document.addEventListener('DOMContentLoaded',()=>observer.observe(document.body,{childList:true,subtree:true}),{once:true});
 })();
 </script>
+
+<style id="kr-final-no-duplicate-services">
+/* FINAL: one public card per location-dependent feature */
+#publicPage .kr-premium-section,
+#publicPage #krPremiumCrowdSection,
+#publicPage #krPremiumServiceSection{
+  display:none!important;
+}
+
+/* Keep the canonical functional cards visible and full-width within their grid. */
+#publicPage #chargingCard,
+#publicPage .parking-card,
+#publicPage #crowdCard{
+  min-width:0!important;
+}
+
+/* SOS and Volunteer: real side-by-side cards on desktop, full width on smaller screens. */
+#publicPage #emergencyCard{
+  grid-column:span 6!important;
+  width:100%!important;
+  min-width:0!important;
+}
+#publicPage .kr-new-bottom-row > #volunteerApplyPublic{
+  width:100%!important;
+  min-width:0!important;
+}
+@media(max-width:900px){
+  #publicPage #emergencyCard{grid-column:1/-1!important}
+}
+</style>
+<script id="kr-final-dedupe-and-layout">
+(function(){
+  'use strict';
+  function run(){
+    const page=document.getElementById('publicPage');
+    const grid=page?.querySelector('.public-dashboard-grid');
+    if(!page||!grid)return;
+
+    /* Remove any old generated premium duplicates if they were created by a
+       cached/previous script before this final patch executes. */
+    ['krPremiumCrowdSection','krPremiumServiceSection'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.remove();
+    });
+
+    /* There must be exactly one canonical Charging, Parking and Crowd card.
+       If an accidental duplicate has been injected later, remove only the
+       generated duplicate, never the original functional card. */
+    const canonicalCharging=document.getElementById('chargingCard');
+    const canonicalCrowd=document.getElementById('crowdCard');
+    const canonicalParking=[...grid.querySelectorAll('.card')].find(el=>{
+      if(el===canonicalCharging||el===canonicalCrowd)return false;
+      return /Car\s*&\s*Bike\s*Parking/i.test(el.textContent||'');
+    });
+
+    [...grid.querySelectorAll('*')].forEach(el=>{
+      if(!el.id && el.classList?.contains('kr-premium-card')){
+        const t=(el.textContent||'').replace(/\s+/g,' ');
+        if(/Phone Charging Stations|Car & Bike Parking|Live Crowd Information/i.test(t)){
+          const parent=el.closest('.kr-premium-section');
+          if(parent)parent.remove();
+        }
+      }
+    });
+
+    if(canonicalCharging)canonicalCharging.style.display='block';
+    if(canonicalParking)canonicalParking.style.display='block';
+
+    /* Crowd has one canonical visible presentation: prefer the newer
+       Crowd Reports card when the later dashboard builder has created it.
+       Otherwise keep the original functional crowd card. */
+    const modernCrowd=document.getElementById('krNewCrowdReports');
+    if(modernCrowd && canonicalCrowd){
+      canonicalCrowd.style.display='none';
+      modernCrowd.style.display='block';
+    }else if(canonicalCrowd){
+      canonicalCrowd.style.display='block';
+    }
+
+    /* Fix the SOS card and volunteer card width. */
+    if(canonicalCrowd)canonicalCrowd.classList.add('kr-live-crowd-fixed');
+    const sos=document.getElementById('emergencyCard');
+    if(sos){
+      sos.style.width='100%';
+      sos.style.minWidth='0';
+      sos.style.gridColumn='span 6';
+    }
+    const vol=document.getElementById('volunteerApplyPublic');
+    if(vol){
+      vol.style.width='100%';
+      vol.style.minWidth='0';
+    }
+
+    /* Preserve the exact-location button. */
+    const loc=document.getElementById('locationCard');
+    const btn=loc?.querySelector('button[onclick*="getLocation"],button.blue');
+    if(btn){
+      btn.setAttribute('onclick','getLocation()');
+      btn.style.width='100%';
+      btn.style.display='flex';
+      btn.style.alignItems='center';
+      btn.style.justifyContent='center';
+      if(!btn.textContent.includes('GET MY EXACT LOCATION'))
+        btn.innerHTML='📍 GET MY EXACT LOCATION';
+    }
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',()=>setTimeout(run,200),{once:true});
+  }else setTimeout(run,200);
+
+  [700,1600,3000].forEach(t=>setTimeout(run,t));
+})();
+</script>
+
 </body>
 </html>
