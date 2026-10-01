@@ -10381,7 +10381,7 @@ body:has(#publicPage.active){background:#eef2f8!important}
             <div class="kr-safety-row"><i>🔔</i><span>Quick emergency alerts</span></div>
           </div>
           <div class="kr-band-art"><div class="strap"></div><div class="face">Kumbh<br>Safety</div></div>
-          <button class="kr-safety-action" type="button" onclick="(typeof showSafetyRegistration==='function' ? showSafetyRegistration() : alert('Safety Band is not available yet.'))">👤 &nbsp; Register / View My Safety Band →</button>
+          <button class="kr-safety-action" type="button" onclick="showSafetyRegistration()">👤 &nbsp; Register / View My Safety Band →</button>
           <div id="krSafetyHost"></div>
         </div>`);
       newSafety.id='krNewSafety';
@@ -11829,11 +11829,20 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
   /* ---------- Safety QR: one visible QR, with profile + contacts + GPS. ---------- */
   window.showSafetyRegistration=function(){
-    const out=$('safetyRegistration');
+    /* Always render into the NEW visible Safety Band card first.
+       The original #safetyRegistration node is retained only for legacy navigation. */
+    let out=document.getElementById('krSafetyHost');
+    if(!out) out=document.getElementById('safetyRegistration');
     if(!out) return;
-    const user=(typeof currentUser!=='undefined')?currentUser:null;
+    out.style.display='block';
+    out.style.width='100%';
+    out.style.visibility='visible';
+    const user=(typeof currentUser!=='undefined' && currentUser)?currentUser:null;
     if(!user){
-      out.innerHTML='<div class="result danger">🔒 Please login or create an account first.</div>';
+      out.innerHTML=`<div class="result danger" style="margin-top:12px">
+        🔒 <b>Please login or create an account first.</b><br>
+        <button type="button" class="blue" style="margin-top:10px" onclick="openPage('userLoginPage'); switchAuth('login')">LOGIN / CREATE ACCOUNT</button>
+      </div>`;
       return;
     }
     const contacts=(window.emergencyContacts&&window.currentUser)
@@ -12522,6 +12531,7 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 }
 </style>
 
+<style id="kr-safety-band-working-fix">\n#publicPage #krNewSafety #krSafetyHost{\n  display:block!important;\n  width:100%!important;\n  min-width:0!important;\n  max-width:100%!important;\n  box-sizing:border-box!important;\n}\n#publicPage #krNewSafety #krSafetyHost .result{\n  width:100%!important;\n  box-sizing:border-box!important;\n}\n#publicPage #krNewSafety #krSafetyHost #mySafetyQR{\n  display:flex!important;\n  justify-content:center!important;\n  align-items:center!important;\n  margin:14px auto!important;\n  width:260px!important;\n  max-width:100%!important;\n  min-height:260px!important;\n  background:#fff!important;\n  border-radius:14px!important;\n  padding:10px!important;\n  box-sizing:border-box!important;\n}\n</style>
 </body>
 </html>
 
