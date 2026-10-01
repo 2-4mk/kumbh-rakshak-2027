@@ -12524,3 +12524,361 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 
 </body>
 </html>
+
+<style id="kr-force-mobile-final">
+/*
+ KUMBH RAKSHAK 2027 — DEVICE-BASED MOBILE OVERRIDE
+ This intentionally does NOT depend on CSS viewport width.
+ It fixes iPhone/Safari desktop-site viewport behavior.
+*/
+html.kr-force-mobile,
+html.kr-force-mobile body{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:hidden!important;
+}
+
+html.kr-force-mobile body:has(#publicPage.active){
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-x:hidden!important;
+}
+
+html.kr-force-mobile body:has(#publicPage.active) .container{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:10px!important;
+  box-sizing:border-box!important;
+}
+
+html.kr-force-mobile #publicPage,
+html.kr-force-mobile #publicPage.active{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+}
+
+html.kr-force-mobile #publicPage .public-dashboard-grid{
+  display:grid!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  grid-auto-columns:minmax(0,1fr)!important;
+  gap:14px!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+}
+
+html.kr-force-mobile #publicPage .public-dashboard-grid > *,
+html.kr-force-mobile #publicPage .public-dashboard-grid > .card,
+html.kr-force-mobile #publicPage .public-dashboard-grid > #locationCard,
+html.kr-force-mobile #publicPage .public-dashboard-grid > #nearbyServicesCard,
+html.kr-force-mobile #publicPage .public-dashboard-grid > #chargingCard,
+html.kr-force-mobile #publicPage .public-dashboard-grid > .parking-card,
+html.kr-force-mobile #publicPage .public-dashboard-grid > #crowdCard,
+html.kr-force-mobile #publicPage .public-dashboard-grid > .qr-card,
+html.kr-force-mobile #publicPage .public-dashboard-grid > .safety-card,
+html.kr-force-mobile #publicPage .public-dashboard-grid > #emergencyCard,
+html.kr-force-mobile #publicPage .public-dashboard-grid > .feedback-card,
+html.kr-force-mobile #publicPage .public-dashboard-grid > #weatherV11,
+html.kr-force-mobile #publicPage .public-dashboard-grid > #v13PublicBusCard,
+html.kr-force-mobile #publicPage .public-dashboard-grid > #v12BusTrackingCard,
+html.kr-force-mobile #publicPage .public-dashboard-grid > .feature-expert-card,
+html.kr-force-mobile #publicPage .public-dashboard-grid > .feature-guide-card,
+html.kr-force-mobile #publicPage .public-dashboard-grid > .kr-new-feature-row,
+html.kr-force-mobile #publicPage .public-dashboard-grid > .kr-new-bottom-row,
+html.kr-force-mobile #publicPage .public-dashboard-grid > #krFinalFeedback{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  justify-self:stretch!important;
+  align-self:start!important;
+  box-sizing:border-box!important;
+}
+
+html.kr-force-mobile #publicPage .public-account-card.kr-account-with-quick{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  gap:12px!important;
+}
+
+html.kr-force-mobile #publicPage .kr-account-with-quick .public-welcome-card,
+html.kr-force-mobile #publicPage .kr-account-with-quick #krReferenceQuick{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+}
+
+html.kr-force-mobile #publicPage .kr-account-with-quick #krReferenceQuick{
+  overflow:visible!important;
+}
+
+html.kr-force-mobile #publicPage .kr-account-with-quick #krReferenceQuick .kr-qgrid{
+  display:grid!important;
+  width:100%!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+
+html.kr-force-mobile #publicPage .kr-account-with-quick #krReferenceQuick .kr-qitem{
+  width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:76px!important;
+  box-sizing:border-box!important;
+}
+
+/* Feature cards: one full-width card at a time. */
+html.kr-force-mobile #publicPage .kr-new-feature-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  grid-column:1/-1!important;
+  gap:14px!important;
+  box-sizing:border-box!important;
+}
+
+html.kr-force-mobile #publicPage .kr-new-feature-row > *,
+html.kr-force-mobile #publicPage .kr-new-feature-row > .kr-ref-new-card,
+html.kr-force-mobile #publicPage .kr-new-feature-row > #krNewCrowdReports,
+html.kr-force-mobile #publicPage .kr-new-feature-row > #krNewQR,
+html.kr-force-mobile #publicPage .kr-new-feature-row > #krNewSafety{
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+}
+
+html.kr-force-mobile #publicPage .kr-new-feature-row .kr-ref-new-inner{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:18px!important;
+  box-sizing:border-box!important;
+}
+
+/* SOS + Volunteer: full-width stacked cards. */
+html.kr-force-mobile #publicPage .kr-new-bottom-row{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  grid-column:1/-1!important;
+  gap:14px!important;
+  box-sizing:border-box!important;
+}
+
+html.kr-force-mobile #publicPage .kr-new-bottom-row > *,
+html.kr-force-mobile #publicPage .kr-new-bottom-row > .kr-emergency-fixed,
+html.kr-force-mobile #publicPage .kr-new-bottom-row > .kr-volunteer-fixed{
+  grid-column:1/-1!important;
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+}
+
+html.kr-force-mobile #publicPage .kr-new-bottom-row .kr-ref-new-inner{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  height:auto!important;
+  min-height:0!important;
+  padding:18px!important;
+  box-sizing:border-box!important;
+}
+
+/* Internal grids stay usable on a phone. */
+html.kr-force-mobile #publicPage .public-dashboard-grid .grid{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+
+html.kr-force-mobile #publicPage .public-dashboard-grid .grid3{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:10px!important;
+}
+
+html.kr-force-mobile #publicPage .public-dashboard-grid button{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+}
+
+/* Location / weather / bus / guide cards */
+html.kr-force-mobile #publicPage #locationCard,
+html.kr-force-mobile #publicPage #nearbyServicesCard,
+html.kr-force-mobile #publicPage #chargingCard,
+html.kr-force-mobile #publicPage .parking-card,
+html.kr-force-mobile #publicPage #crowdCard,
+html.kr-force-mobile #publicPage #weatherV11,
+html.kr-force-mobile #publicPage #v13PublicBusCard,
+html.kr-force-mobile #publicPage #v12BusTrackingCard,
+html.kr-force-mobile #publicPage .feature-expert-card,
+html.kr-force-mobile #publicPage .feature-guide-card{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  grid-column:1/-1!important;
+  box-sizing:border-box!important;
+  height:auto!important;
+}
+
+html.kr-force-mobile #publicPage #locationCard #map{
+  width:100%!important;
+  max-width:none!important;
+  min-height:300px!important;
+}
+
+html.kr-force-mobile #publicPage .feature-expert-card,
+html.kr-force-mobile #publicPage .feature-guide-card{
+  min-height:0!important;
+}
+
+html.kr-force-mobile #publicPage .feature-expert-card > *,
+html.kr-force-mobile #publicPage .feature-guide-card > *,
+html.kr-force-mobile #publicPage #v12BusTrackingCard > *,
+html.kr-force-mobile #publicPage #v13PublicBusCard > *{
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+
+/* Don't allow decorative artwork to create a fake desktop width. */
+html.kr-force-mobile #publicPage .kr-band-art,
+html.kr-force-mobile #publicPage .kr-vol-person,
+html.kr-force-mobile #publicPage .dashboard-kpi{
+  max-width:100%!important;
+}
+
+/* Text must wrap naturally rather than becoming one word per line. */
+html.kr-force-mobile #publicPage h1,
+html.kr-force-mobile #publicPage h2,
+html.kr-force-mobile #publicPage h3,
+html.kr-force-mobile #publicPage p,
+html.kr-force-mobile #publicPage span,
+html.kr-force-mobile #publicPage b,
+html.kr-force-mobile #publicPage strong{
+  max-width:100%!important;
+  min-width:0!important;
+  overflow-wrap:anywhere!important;
+}
+
+/* Header remains full phone width. */
+html.kr-force-mobile #publicPage .premium-dashboard-head{
+  width:100%!important;
+  max-width:none!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+}
+</style>
+<script id="kr-device-mobile-lock">
+(function(){
+  'use strict';
+
+  function isPhoneLike(){
+    const ua=navigator.userAgent||'';
+    const iPhone=/iPhone|iPod/i.test(ua);
+    const iPad=/iPad/i.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+    const android=/Android/i.test(ua);
+    return iPhone || iPad || android;
+  }
+
+  function forceMobile(){
+    if(!isPhoneLike()) return;
+    document.documentElement.classList.add('kr-force-mobile');
+
+    const page=document.getElementById('publicPage');
+    if(!page) return;
+
+    const grid=page.querySelector('.public-dashboard-grid');
+    if(grid){
+      grid.style.setProperty('display','grid','important');
+      grid.style.setProperty('grid-template-columns','minmax(0,1fr)','important');
+      grid.style.setProperty('width','100%','important');
+      grid.style.setProperty('max-width','none','important');
+      grid.style.setProperty('min-width','0','important');
+      grid.style.setProperty('box-sizing','border-box','important');
+
+      [...grid.children].forEach(el=>{
+        el.style.setProperty('grid-column','1 / -1','important');
+        el.style.setProperty('width','100%','important');
+        el.style.setProperty('max-width','none','important');
+        el.style.setProperty('min-width','0','important');
+        el.style.setProperty('box-sizing','border-box','important');
+      });
+    }
+
+    const account=page.querySelector('.public-account-card.kr-account-with-quick');
+    if(account){
+      account.style.setProperty('display','grid','important');
+      account.style.setProperty('grid-template-columns','minmax(0,1fr)','important');
+      account.style.setProperty('width','100%','important');
+    }
+
+    ['.kr-new-feature-row','.kr-new-bottom-row'].forEach(sel=>{
+      page.querySelectorAll(sel).forEach(row=>{
+        row.style.setProperty('display','grid','important');
+        row.style.setProperty('grid-template-columns','minmax(0,1fr)','important');
+        row.style.setProperty('width','100%','important');
+        row.style.setProperty('max-width','none','important');
+        row.style.setProperty('min-width','0','important');
+        [...row.children].forEach(el=>{
+          el.style.setProperty('grid-column','1 / -1','important');
+          el.style.setProperty('width','100%','important');
+          el.style.setProperty('max-width','none','important');
+          el.style.setProperty('min-width','0','important');
+        });
+      });
+    });
+  }
+
+  function boot(){
+    forceMobile();
+    [100,400,900,1800,3000].forEach(t=>setTimeout(forceMobile,t));
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',boot,{once:true});
+  }else{
+    boot();
+  }
+})();
+</script>
