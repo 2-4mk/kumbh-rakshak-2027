@@ -12138,5 +12138,389 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 })();
 </script>
 
+
+
+<style id="kr-mobile-final-authority">
+/*
+  KUMBH RAKSHAK 2027 — FINAL MOBILE AUTHORITY
+  This block intentionally comes LAST so older desktop/layout patches
+  cannot squeeze dashboard cards on phones.
+*/
+@media screen and (max-width:820px),
+       screen and (max-device-width:820px){
+
+  html,body{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    overflow-x:hidden!important;
+  }
+
+  body:has(#publicPage.active){
+    width:100%!important;
+    max-width:100%!important;
+    overflow-x:hidden!important;
+  }
+
+  body:has(#publicPage.active) .container{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:10px!important;
+    box-sizing:border-box!important;
+  }
+
+  #publicPage,
+  #publicPage.active{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+  }
+
+  #publicPage .public-dashboard-grid{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    grid-auto-columns:minmax(0,1fr)!important;
+    gap:14px!important;
+    margin:0!important;
+    padding:0!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+  }
+
+  /* Every direct dashboard card gets the complete phone width. */
+  #publicPage .public-dashboard-grid > .card,
+  #publicPage .public-dashboard-grid > .public-account-card,
+  #publicPage .public-dashboard-grid > #locationCard,
+  #publicPage .public-dashboard-grid > #nearbyServicesCard,
+  #publicPage .public-dashboard-grid > #chargingCard,
+  #publicPage .public-dashboard-grid > .parking-card,
+  #publicPage .public-dashboard-grid > #crowdCard,
+  #publicPage .public-dashboard-grid > .qr-card,
+  #publicPage .public-dashboard-grid > .safety-card,
+  #publicPage .public-dashboard-grid > #emergencyCard,
+  #publicPage .public-dashboard-grid > .feedback-card,
+  #publicPage .public-dashboard-grid > #weatherV11,
+  #publicPage .public-dashboard-grid > #v13PublicBusCard,
+  #publicPage .public-dashboard-grid > #v12BusTrackingCard,
+  #publicPage .public-dashboard-grid > .feature-expert-card,
+  #publicPage .public-dashboard-grid > .feature-guide-card,
+  #publicPage .public-dashboard-grid > .kr-new-feature-row,
+  #publicPage .public-dashboard-grid > .kr-new-bottom-row,
+  #publicPage .public-dashboard-grid > #krFinalFeedback{
+    grid-column:1 / -1!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    justify-self:stretch!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Account + Quick Services */
+  #publicPage .public-account-card.kr-account-with-quick{
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:12px!important;
+    width:100%!important;
+    min-width:0!important;
+  }
+
+  #publicPage .kr-account-with-quick .public-welcome-card,
+  #publicPage .kr-account-with-quick #krReferenceQuick{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:0!important;
+    box-sizing:border-box!important;
+  }
+
+  #publicPage .kr-account-with-quick #krReferenceQuick{
+    overflow:visible!important;
+  }
+
+  #publicPage .kr-account-with-quick #krReferenceQuick .kr-qgrid{
+    width:100%!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+
+  #publicPage .kr-account-with-quick #krReferenceQuick .kr-qitem{
+    width:100%!important;
+    min-width:0!important;
+    min-height:76px!important;
+    height:auto!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Existing location/services/charging/parking/crowd cards */
+  #publicPage #locationCard,
+  #publicPage #nearbyServicesCard,
+  #publicPage #chargingCard,
+  #publicPage .parking-card,
+  #publicPage #crowdCard{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    grid-column:1 / -1!important;
+    box-sizing:border-box!important;
+  }
+
+  #publicPage #locationCard #map{
+    width:100%!important;
+    max-width:100%!important;
+    min-height:300px!important;
+  }
+
+  /* Feature row: Crowd Reports / QR / Safety stack vertically. */
+  #publicPage .kr-new-feature-row{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:14px!important;
+    grid-column:1 / -1!important;
+    overflow:visible!important;
+  }
+
+  #publicPage .kr-new-feature-row > .kr-ref-new-card,
+  #publicPage .kr-new-feature-row > #krNewCrowdReports,
+  #publicPage .kr-new-feature-row > #krNewQR,
+  #publicPage .kr-new-feature-row > #krNewSafety{
+    grid-column:1 / -1!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #publicPage .kr-new-feature-row .kr-ref-new-inner{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    min-height:0!important;
+    height:auto!important;
+    box-sizing:border-box!important;
+    padding:18px!important;
+  }
+
+  #publicPage .kr-new-feature-row .kr-ref-head{
+    width:100%!important;
+    min-width:0!important;
+    display:flex!important;
+    align-items:flex-start!important;
+  }
+
+  #publicPage .kr-new-feature-row .kr-ref-head > div:nth-child(2){
+    min-width:0!important;
+    flex:1 1 auto!important;
+  }
+
+  #publicPage .kr-new-feature-row .kr-ref-head h2,
+  #publicPage .kr-new-feature-row .kr-ref-head p{
+    max-width:100%!important;
+    overflow-wrap:anywhere!important;
+  }
+
+  #publicPage #krNewCrowdReports .kr-crowd-empty,
+  #publicPage #krNewQR .kr-qr-visual,
+  #publicPage #krNewSafety .kr-safety-list{
+    width:100%!important;
+    max-width:100%!important;
+    box-sizing:border-box!important;
+  }
+
+  #publicPage #krNewQR .kr-phone{
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+
+  #publicPage #krNewSafety .kr-safety-list{
+    margin-top:12px!important;
+  }
+
+  #publicPage #krNewSafety .kr-band-art{
+    opacity:.14!important;
+    right:8px!important;
+  }
+
+  /* Older feature cards such as Expert Guidance, Bus Tracking and Guide. */
+  #publicPage .feature-expert-card,
+  #publicPage .feature-guide-card,
+  #publicPage #v12BusTrackingCard,
+  #publicPage #v13PublicBusCard,
+  #publicPage #weatherV11{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    grid-column:1 / -1!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #publicPage .feature-expert-card,
+  #publicPage .feature-guide-card{
+    min-height:0!important;
+    height:auto!important;
+  }
+
+  #publicPage .feature-expert-card > *,
+  #publicPage .feature-guide-card > *,
+  #publicPage #v12BusTrackingCard > *,
+  #publicPage #v13PublicBusCard > *{
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Fix internal 2-column grids without squeezing text. */
+  #publicPage .public-dashboard-grid .grid{
+    width:100%!important;
+    max-width:100%!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+
+  #publicPage .public-dashboard-grid .grid3{
+    width:100%!important;
+    max-width:100%!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+
+  #publicPage .public-dashboard-grid button{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Bottom SOS + Volunteer row: two full-width cards, stacked. */
+  #publicPage .kr-new-bottom-row{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    display:grid!important;
+    grid-template-columns:minmax(0,1fr)!important;
+    gap:14px!important;
+    grid-column:1 / -1!important;
+    box-sizing:border-box!important;
+    overflow:visible!important;
+  }
+
+  #publicPage .kr-new-bottom-row > .kr-emergency-fixed,
+  #publicPage .kr-new-bottom-row > .kr-volunteer-fixed{
+    grid-column:1 / -1!important;
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #publicPage .kr-new-bottom-row .kr-ref-new-inner{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    height:auto!important;
+    min-height:0!important;
+    padding:18px!important;
+    box-sizing:border-box!important;
+  }
+
+  #publicPage .kr-emergency-fixed .kr-ref-head,
+  #publicPage .kr-volunteer-fixed .kr-ref-head{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+
+  #publicPage .kr-emergency-fixed .kr-ref-head > div:nth-child(2),
+  #publicPage .kr-volunteer-fixed .kr-ref-head > div:nth-child(2){
+    min-width:0!important;
+    flex:1 1 auto!important;
+  }
+
+  #publicPage .kr-emergency-fixed .kr-contact-list,
+  #publicPage .kr-volunteer-fixed .kr-vol-list{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+  }
+
+  #publicPage .kr-volunteer-fixed .kr-vol-person{
+    opacity:.10!important;
+    right:0!important;
+  }
+
+  #publicPage .kr-bottom-actions{
+    width:100%!important;
+    grid-template-columns:1fr 1fr!important;
+  }
+
+  /* Feedback */
+  #publicPage #krFinalFeedback,
+  #publicPage .kr-feedback-fixed{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    grid-column:1 / -1!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Header/nav must also remain inside the phone viewport. */
+  #publicPage .premium-dashboard-head{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+    overflow:hidden!important;
+  }
+
+  #publicPage .premium-dashboard-head > div:first-child{
+    width:100%!important;
+    max-width:100%!important;
+    min-width:0!important;
+    box-sizing:border-box!important;
+  }
+
+  /* Prevent long labels/emoji from establishing a desktop-sized minimum. */
+  #publicPage h1,
+  #publicPage h2,
+  #publicPage h3,
+  #publicPage p,
+  #publicPage span,
+  #publicPage b,
+  #publicPage strong{
+    max-width:100%;
+    overflow-wrap:anywhere;
+  }
+
+  /* Kill accidental horizontal overflow from generated decorative elements. */
+  #publicPage .kr-band-art,
+  #publicPage .kr-vol-person,
+  #publicPage .dashboard-kpi,
+  #publicPage .premium-dashboard-head > *{
+    max-width:100%;
+  }
+}
+</style>
+
 </body>
 </html>
