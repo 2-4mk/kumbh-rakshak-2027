@@ -856,6 +856,416 @@ body:has(#publicPage.active) .container{padding-top:8px!important}
 @media(max-width:700px){#mainHeader .brand-sub,#mainHeader .brand-location{display:none!important}#mainHeader .brand-block{min-width:0}#mainHeader .top-navigation .nav-link:not(.nav-active){display:none!important}#publicPage .premium-dashboard-head>div:first-child{min-height:245px}#publicPage .premium-dashboard-head h1{font-size:34px!important}#publicPage .public-dashboard-grid>.card{grid-column:1/-1!important}}
 </style>
 
+
+<style id="kr-safety-services-reference">
+/* ==========================================================
+   SAFETY / BUS / GUIDE / NEARBY SERVICES — REFERENCE STYLE
+   Inspired by the user's supplied dashboard reference.
+   Does not alter the original home/landing screen.
+   ========================================================== */
+body.kr-inner-active #publicPage .kr-ref-top-row,
+body.kr-inner-active #publicPage .kr-ref-bottom-row{
+  display:grid!important;
+  gap:14px!important;
+  align-items:stretch!important;
+}
+body.kr-inner-active #publicPage .kr-ref-top-row{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+}
+body.kr-inner-active #publicPage .kr-ref-bottom-row{
+  grid-template-columns:1fr 1fr!important;
+}
+
+/* hide the original generic grid treatment only for these grouped cards */
+body.kr-inner-active #publicPage .kr-ref-card{
+  position:relative!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  border-radius:22px!important;
+  padding:0!important;
+  border:1px solid rgba(255,255,255,.72)!important;
+  box-shadow:0 12px 32px rgba(25,48,78,.10)!important;
+  background:#fff!important;
+  transition:transform .2s ease,box-shadow .2s ease!important;
+}
+body.kr-inner-active #publicPage .kr-ref-card:hover{
+  transform:translateY(-3px)!important;
+  box-shadow:0 20px 42px rgba(25,48,78,.15)!important;
+}
+body.kr-inner-active #publicPage .kr-ref-card:before{
+  display:none!important;
+}
+body.kr-inner-active #publicPage .kr-ref-card .kr-ref-inner{
+  min-height:380px;
+  padding:20px 20px 18px;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+}
+body.kr-inner-active #publicPage .kr-ref-card .kr-ref-inner:after{
+  content:"";
+  position:absolute;
+  right:-45px;
+  bottom:-65px;
+  width:260px;
+  height:260px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(255,255,255,.45),transparent 68%);
+  pointer-events:none;
+}
+
+/* large visual background zones */
+body.kr-inner-active #publicPage .kr-ref-safety .kr-ref-inner{
+  background:
+    radial-gradient(circle at 82% 18%,rgba(255,204,119,.75),transparent 20%),
+    linear-gradient(145deg,#fff7e9 0%,#fff 50%,#ffe8c8 100%);
+}
+body.kr-inner-active #publicPage .kr-ref-bus .kr-ref-inner{
+  background:
+    radial-gradient(circle at 85% 30%,rgba(255,184,96,.50),transparent 26%),
+    linear-gradient(145deg,#eaf5ff 0%,#fff 55%,#d9edff 100%);
+}
+body.kr-inner-active #publicPage .kr-ref-livebus .kr-ref-inner{
+  background:
+    radial-gradient(circle at 84% 36%,rgba(255,127,181,.28),transparent 23%),
+    linear-gradient(145deg,#f1efff 0%,#fff 52%,#e9efff 100%);
+}
+body.kr-inner-active #publicPage .kr-ref-guide .kr-ref-inner{
+  background:
+    radial-gradient(circle at 72% 82%,rgba(255,180,204,.38),transparent 28%),
+    linear-gradient(145deg,#f7f0ff,#fff 50%,#eee9ff);
+}
+body.kr-inner-active #publicPage .kr-ref-services .kr-ref-inner{
+  background:
+    radial-gradient(circle at 85% 12%,rgba(255,183,100,.26),transparent 24%),
+    linear-gradient(145deg,#fff,#f8fbff);
+}
+
+/* headers */
+body.kr-inner-active #publicPage .kr-ref-title{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  position:relative;
+  z-index:3;
+}
+body.kr-inner-active #publicPage .kr-ref-icon{
+  width:50px;height:50px;flex:0 0 50px;
+  border-radius:16px;
+  display:grid;place-items:center;
+  font-size:30px;
+  background:rgba(255,255,255,.78);
+  box-shadow:0 8px 20px rgba(31,54,85,.10);
+}
+body.kr-inner-active #publicPage .kr-ref-title h2{
+  margin:2px 0 4px!important;
+  font-size:22px!important;
+  line-height:1.1!important;
+  letter-spacing:-.035em!important;
+  color:#102a54!important;
+}
+body.kr-inner-active #publicPage .kr-ref-title p{
+  margin:0!important;
+  font-size:12px!important;
+  line-height:1.35!important;
+  color:#213e67!important;
+}
+body.kr-inner-active #publicPage .kr-ref-arrow{
+  margin-left:auto;
+  width:54px;height:54px;
+  flex:0 0 54px;
+  border:1px solid rgba(255,255,255,.85)!important;
+  border-radius:15px!important;
+  background:rgba(255,255,255,.78)!important;
+  color:#102a54!important;
+  font-size:27px!important;
+  padding:0!important;
+  min-height:54px!important;
+  box-shadow:0 8px 18px rgba(25,48,78,.08)!important;
+}
+body.kr-inner-active #publicPage .kr-ref-arrow:hover{
+  background:#fff!important;
+  transform:translateY(-2px)!important;
+}
+
+/* safety list */
+body.kr-inner-active #publicPage .kr-ref-list{
+  position:relative;z-index:3;
+  margin:18px 0 12px;
+  padding:10px 13px;
+  border-radius:20px;
+  background:rgba(255,255,255,.75);
+  border:1px solid rgba(255,255,255,.9);
+}
+body.kr-inner-active #publicPage .kr-ref-list-row{
+  display:flex;align-items:center;gap:12px;
+  padding:9px 4px;
+  color:#112d56;
+  font-size:13px;
+  line-height:1.3;
+}
+body.kr-inner-active #publicPage .kr-ref-list-row+.kr-ref-list-row{
+  border-top:1px solid rgba(30,58,91,.08);
+}
+body.kr-inner-active #publicPage .kr-ref-list-ico{
+  width:38px;height:38px;flex:0 0 38px;border-radius:12px;
+  display:grid;place-items:center;font-size:21px;
+  background:linear-gradient(145deg,#fff,#f1f5fb);
+}
+
+/* primary reference buttons */
+body.kr-inner-active #publicPage .kr-ref-primary{
+  margin-top:auto!important;
+  width:100%!important;
+  min-height:58px!important;
+  border-radius:17px!important;
+  border:0!important;
+  color:#fff!important;
+  font-size:14px!important;
+  font-weight:900!important;
+  letter-spacing:.01em;
+  box-shadow:0 11px 24px rgba(27,74,145,.18)!important;
+}
+body.kr-inner-active #publicPage .kr-ref-primary.orange{
+  background:linear-gradient(135deg,#ff5b00,#ff8b19)!important;
+}
+body.kr-inner-active #publicPage .kr-ref-primary.blue{
+  background:linear-gradient(135deg,#0875e8,#2c90ff)!important;
+}
+body.kr-inner-active #publicPage .kr-ref-primary.purple{
+  background:linear-gradient(135deg,#5b1be1,#773de7)!important;
+}
+
+/* bus stats */
+body.kr-inner-active #publicPage .kr-ref-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:9px;
+  margin-top:auto;
+  position:relative;z-index:3;
+}
+body.kr-inner-active #publicPage .kr-ref-stat{
+  padding:12px 8px;
+  border-radius:15px;
+  text-align:center;
+  background:rgba(255,255,255,.82);
+  border:1px solid rgba(216,229,243,.95);
+}
+body.kr-inner-active #publicPage .kr-ref-stat b{
+  display:block;font-size:18px;color:#102a54;margin-top:2px;
+}
+body.kr-inner-active #publicPage .kr-ref-stat span{
+  display:block;font-size:10px;color:#667994;margin-top:2px;
+}
+
+/* live bus visual map */
+body.kr-inner-active #publicPage .kr-ref-live-map{
+  position:relative;
+  min-height:145px;
+  margin:16px 0 12px;
+  border-radius:18px;
+  overflow:hidden;
+  background:
+    linear-gradient(30deg,transparent 47%,rgba(32,117,224,.18) 48% 52%,transparent 53%),
+    linear-gradient(150deg,transparent 46%,rgba(32,117,224,.16) 47% 50%,transparent 51%),
+    linear-gradient(145deg,#e9f1ff,#fff 52%,#fcefe7);
+  border:1px solid #dce6f4;
+}
+body.kr-inner-active #publicPage .kr-ref-route{
+  position:absolute;left:16%;right:13%;top:58%;
+  height:9px;border-radius:999px;
+  transform:rotate(-13deg);
+  background:linear-gradient(90deg,#1677e9,#2f82ff,#1766d2);
+  box-shadow:0 3px 10px rgba(23,110,211,.25);
+}
+body.kr-inner-active #publicPage .kr-ref-bus-dot{
+  position:absolute;left:54%;top:49%;
+  width:42px;height:30px;border-radius:9px;
+  display:grid;place-items:center;background:#0878e7;color:#fff;
+  box-shadow:0 6px 12px rgba(0,90,180,.22);
+}
+body.kr-inner-active #publicPage .kr-ref-pin{
+  position:absolute;width:38px;height:38px;border-radius:50%;
+  display:grid;place-items:center;color:#fff;font-size:17px;
+  box-shadow:0 7px 16px rgba(0,0,0,.12);
+}
+body.kr-inner-active #publicPage .kr-ref-pin.start{left:11%;bottom:20%;background:#1479e8}
+body.kr-inner-active #publicPage .kr-ref-pin.end{right:9%;top:17%;background:#f12f76}
+body.kr-inner-active #publicPage .kr-ref-stop{
+  position:absolute;right:28%;top:18%;
+  padding:9px 12px;border-radius:12px;background:#fff;
+  box-shadow:0 6px 18px rgba(31,53,80,.12);
+  color:#102a54;font-size:11px;font-weight:800;
+}
+
+/* guide card */
+body.kr-inner-active #publicPage .kr-ref-guide .kr-ref-inner{
+  min-height:300px;
+}
+body.kr-inner-active #publicPage .kr-guide-copy{
+  position:relative;z-index:3;
+  margin-top:18px;
+  max-width:62%;
+  padding:14px;
+  border-radius:17px;
+  background:rgba(255,255,255,.72);
+}
+body.kr-inner-active #publicPage .kr-guide-copy-row{
+  display:flex;gap:10px;align-items:center;
+  padding:6px 0;color:#142e56;font-size:12px;
+}
+body.kr-inner-active #publicPage .kr-guide-copy-row b{display:block;font-size:12px}
+body.kr-inner-active #publicPage .kr-guide-copy-row small{display:block;color:#687a93}
+body.kr-inner-active #publicPage .kr-guide-person{
+  position:absolute;right:-4px;bottom:0;
+  width:42%;height:72%;
+  border-radius:100% 0 0 0;
+  background:
+    radial-gradient(circle at 58% 25%,#f4a47a 0 9%,transparent 9.5%),
+    radial-gradient(ellipse at 58% 75%,#e76f18 0 31%,transparent 31.5%),
+    linear-gradient(160deg,rgba(255,255,255,0),rgba(92,43,176,.15));
+  opacity:.92;
+}
+
+/* services */
+body.kr-inner-active #publicPage .kr-service-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  margin-top:15px;position:relative;z-index:3;
+}
+body.kr-inner-active #publicPage .kr-service-tile{
+  min-height:88px;padding:13px;border-radius:16px;
+  border:1px solid rgba(224,231,240,.95);
+  display:flex;align-items:center;gap:11px;
+  background:#f8fbff;
+  text-align:left!important;
+  color:#102a54!important;
+  box-shadow:none!important;
+}
+body.kr-inner-active #publicPage .kr-service-tile:nth-child(2){background:#fff0f2}
+body.kr-inner-active #publicPage .kr-service-tile:nth-child(3){background:#fff8e8}
+body.kr-inner-active #publicPage .kr-service-tile:nth-child(4){background:#edfbf2}
+body.kr-inner-active #publicPage .kr-service-tile:nth-child(5){background:#f3edff}
+body.kr-inner-active #publicPage .kr-service-tile:nth-child(6){background:#eaf6ff}
+body.kr-inner-active #publicPage .kr-service-tile .ico{font-size:29px}
+body.kr-inner-active #publicPage .kr-service-tile b{display:block;font-size:12px}
+body.kr-inner-active #publicPage .kr-service-tile small{display:block;margin-top:4px;color:#5f7087;font-size:10px}
+
+/* responsive */
+@media(max-width:1050px){
+  body.kr-inner-active #publicPage .kr-ref-top-row{grid-template-columns:1fr!important}
+  body.kr-inner-active #publicPage .kr-ref-bottom-row{grid-template-columns:1fr!important}
+}
+@media(max-width:700px){
+  body.kr-inner-active #publicPage .kr-service-grid{grid-template-columns:repeat(2,1fr)!important}
+  body.kr-inner-active #publicPage .kr-guide-copy{max-width:100%}
+  body.kr-inner-active #publicPage .kr-guide-person{display:none}
+  body.kr-inner-active #publicPage .kr-ref-stats{grid-template-columns:1fr}
+}
+</style>
+
+
+<style id="kr-clean-layout-fix">
+/* FINAL CLEAN LAYOUT FIX
+   - Completely removes the left sidebar.
+   - Gives the grouped reference sections the full dashboard width.
+   - Prevents the 12-column parent grid from squeezing the grouped rows.
+*/
+html, body{
+  padding-left:0!important;
+  margin-left:0!important;
+}
+#krReferenceSidebar{
+  display:none!important;
+  width:0!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
+body .container{
+  width:100%!important;
+  max-width:1600px!important;
+  margin:0 auto!important;
+  padding-left:20px!important;
+  padding-right:20px!important;
+}
+
+/* Header becomes a clean full-width premium header */
+#mainHeader{
+  width:100%!important;
+  margin:0 0 14px!important;
+  border-radius:0 0 20px 20px!important;
+}
+
+/* The parent remains responsible for all other dashboard cards,
+   while our reference rows span the complete dashboard. */
+body.kr-inner-active #publicPage .public-dashboard-grid{
+  width:100%!important;
+  max-width:1420px!important;
+  margin:0 auto!important;
+}
+body.kr-inner-active #publicPage .public-dashboard-grid > .kr-ref-top-row,
+body.kr-inner-active #publicPage .public-dashboard-grid > .kr-ref-bottom-row{
+  grid-column:1 / -1!important;
+  width:100%!important;
+  min-width:0!important;
+  margin:0!important;
+  padding:0!important;
+  box-sizing:border-box!important;
+}
+body.kr-inner-active #publicPage .kr-ref-top-row{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:18px!important;
+  align-items:stretch!important;
+}
+body.kr-inner-active #publicPage .kr-ref-bottom-row{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:18px!important;
+  align-items:stretch!important;
+  margin-top:18px!important;
+}
+
+/* The five reference cards should never inherit narrow grid sizing. */
+body.kr-inner-active #publicPage .kr-ref-top-row > .kr-ref-card,
+body.kr-inner-active #publicPage .kr-ref-bottom-row > .kr-ref-card{
+  width:100%!important;
+  min-width:0!important;
+  max-width:none!important;
+  grid-column:auto!important;
+  margin:0!important;
+  box-sizing:border-box!important;
+}
+body.kr-inner-active #publicPage .kr-ref-top-row > .kr-ref-card .kr-ref-inner{
+  min-height:390px!important;
+}
+body.kr-inner-active #publicPage .kr-ref-bottom-row > .kr-ref-card .kr-ref-inner{
+  min-height:330px!important;
+}
+
+/* Keep the rest of the dashboard below these sections instead of
+   creating squeezed side columns. */
+@media(max-width:1100px){
+  body.kr-inner-active #publicPage .kr-ref-top-row{
+    grid-template-columns:1fr 1fr!important;
+  }
+  body.kr-inner-active #publicPage .kr-ref-top-row > .kr-ref-livebus{
+    grid-column:1 / -1!important;
+  }
+}
+@media(max-width:760px){
+  body .container{
+    padding-left:10px!important;
+    padding-right:10px!important;
+  }
+  body.kr-inner-active #publicPage .kr-ref-top-row,
+  body.kr-inner-active #publicPage .kr-ref-bottom-row{
+    grid-template-columns:1fr!important;
+  }
+  body.kr-inner-active #publicPage .kr-ref-top-row > .kr-ref-livebus{
+    grid-column:auto!important;
+  }
+}
+</style>
+
 </head>
 <body>
 
@@ -8816,6 +9226,115 @@ body:has(#publicPage.active) .container{
   function run(){addQuickServices();setTimeout(addQuickServices,500)}
   document.addEventListener('DOMContentLoaded',run);
   new MutationObserver(run).observe(document.body,{subtree:true,childList:true});
+})();
+</script>
+
+
+<script id="kr-safety-services-reference-js">
+(function(){
+  function makeCard(className, titleMatch, icon, subtitle, build){
+    const page=document.getElementById('publicPage');
+    if(!page) return;
+    const cards=[...page.querySelectorAll('.public-dashboard-grid > .card')];
+    const card=cards.find(c=>(c.innerText||'').toLowerCase().includes(titleMatch.toLowerCase()));
+    if(!card || card.dataset.krRefBuilt) return;
+    card.dataset.krRefBuilt='1';
+    card.classList.add('kr-ref-card',className);
+    const old=card.innerHTML;
+    card.innerHTML='';
+    const inner=document.createElement('div');
+    inner.className='kr-ref-inner';
+    inner.innerHTML=`
+      <div class="kr-ref-title">
+        <div class="kr-ref-icon">${icon}</div>
+        <div><h2>${titleMatch}</h2><p>${subtitle}</p></div>
+        <button class="kr-ref-arrow" aria-label="Open ${titleMatch}">→</button>
+      </div>`;
+    build(inner,old);
+    card.appendChild(inner);
+  }
+
+  function apply(){
+    const page=document.getElementById('publicPage');
+    if(!page || !page.classList.contains('active')) return;
+    const grid=page.querySelector('.public-dashboard-grid');
+    if(!grid) return;
+
+    makeCard('kr-ref-safety','Expert Safety Guidance','🧑‍✈️','Stay informed, stay safe at Kumbh Mela',(inner)=>{
+      inner.insertAdjacentHTML('beforeend',`
+        <div class="kr-ref-list">
+          <div class="kr-ref-list-row"><span class="kr-ref-list-ico">☀️</span><span>High UV: use shade, water and sun protection.</span></div>
+          <div class="kr-ref-list-row"><span class="kr-ref-list-ico">👨‍👩‍👧</span><span>Keep children and elderly together in crowded areas.</span></div>
+          <div class="kr-ref-list-row"><span class="kr-ref-list-ico">💧</span><span>Stay hydrated and carry drinking water.</span></div>
+          <div class="kr-ref-list-row"><span class="kr-ref-list-ico">⚠️</span><span>Follow official routes and announcements.</span></div>
+        </div>
+        <button class="kr-ref-primary orange" onclick="showSafetyGuidanceV11?.()">📖 &nbsp; VIEW MORE SAFETY GUIDANCE &nbsp; →</button>`);
+    });
+
+    makeCard('kr-ref-bus','Bus Timetable','🚌','View volunteer-updated bus routes and departure times.',(inner)=>{
+      inner.insertAdjacentHTML('beforeend',`
+        <div class="kr-ref-stats">
+          <div class="kr-ref-stat">🔗<b>24</b><span>Active Routes</span></div>
+          <div class="kr-ref-stat">🕐<b>12:15 PM</b><span>Next Departure</span></div>
+          <div class="kr-ref-stat">👥<b>200+</b><span>Buses</span></div>
+        </div>
+        <button class="kr-ref-primary blue" onclick="showBusTimetableV13?.(); showBusTimetableV11?.()">▦ &nbsp; VIEW BUS TIMETABLE &nbsp; →</button>`);
+    });
+
+    makeCard('kr-ref-livebus','Live Bus Tracking','🚌','Track your bus in real-time and know the estimated time to reach your stop.',(inner)=>{
+      inner.insertAdjacentHTML('beforeend',`
+        <div class="kr-ref-live-map"><div class="kr-ref-route"></div><div class="kr-ref-bus-dot">🚌</div><div class="kr-ref-pin start">●</div><div class="kr-ref-pin end">●</div><div class="kr-ref-stop">Next Stop<br><b>2 min</b></div></div>
+        <div class="grid" style="grid-template-columns:1fr 1fr!important;gap:8px!important">
+          <button class="blue" onclick="v12StartBusTracking()">📡 START BUS TRACKING</button>
+          <button onclick="v12StopBusTracking()">■ STOP TRACKING</button>
+        </div>
+        <div class="result info">🚌 Bus tracking is currently off.</div>`);
+    });
+
+    makeCard('kr-ref-guide','Hire a Local Guide','🧭','Request a verified guide for ghats, temples, routes and nearby facilities.',(inner)=>{
+      inner.insertAdjacentHTML('beforeend',`
+        <div class="kr-guide-copy">
+          <div class="kr-guide-copy-row"><span>🛕</span><div><b>Verified & Trained Guides</b><small>Get help from authorized local guides.</small></div></div>
+          <div class="kr-guide-copy-row"><span>🗺️</span><div><b>Assistance for Routes & Ghats</b><small>Find the best and safest routes.</small></div></div>
+          <div class="kr-guide-copy-row"><span>👨‍👩‍👧</span><div><b>Support for Elderly & Families</b><small>Travel with confidence and ease.</small></div></div>
+        </div>
+        <div class="kr-guide-person"></div>
+        <button class="kr-ref-primary purple" onclick="showGuideV11()">🧑‍✈️ &nbsp; REQUEST A GUIDE &nbsp; →</button>`);
+    });
+
+    makeCard('kr-ref-services','Nearby Services','🗺️','Quick access to essential services around you.',(inner)=>{
+      inner.insertAdjacentHTML('beforeend',`
+        <div class="kr-service-grid">
+          <button class="kr-service-tile" onclick="findService('police')"><span class="ico">👮</span><span><b>Nearest Police</b><small>3 nearby</small></span><strong>›</strong></button>
+          <button class="kr-service-tile" onclick="findService('hospital')"><span class="ico">🏥</span><span><b>Hospital</b><small>5 nearby</small></span><strong>›</strong></button>
+          <button class="kr-service-tile" onclick="findService('bus')"><span class="ico">🚌</span><span><b>Bus Stand</b><small>8 nearby</small></span><strong>›</strong></button>
+          <button class="kr-service-tile" onclick="findService('auto')"><span class="ico">🛺</span><span><b>Auto / Rickshaw</b><small>6 nearby</small></span><strong>›</strong></button>
+          <button class="kr-service-tile" onclick="findService('toilet')"><span class="ico">🚻</span><span><b>Toilet</b><small>8 nearby</small></span><strong>›</strong></button>
+          <button class="kr-service-tile" onclick="findService('water')"><span class="ico">💧</span><span><b>Drinking Water</b><small>10 nearby</small></span><strong>›</strong></button>
+        </div>`);
+    });
+
+    // Group the five reference cards into the same 3 + 2 visual rows.
+    const safety=grid.querySelector('.kr-ref-safety');
+    const bus=grid.querySelector('.kr-ref-bus');
+    const live=grid.querySelector('.kr-ref-livebus');
+    const guide=grid.querySelector('.kr-ref-guide');
+    const services=grid.querySelector('.kr-ref-services');
+    if(safety && bus && live && !grid.querySelector('.kr-ref-top-row')){
+      const top=document.createElement('div'); top.className='kr-ref-top-row';
+      grid.insertBefore(top,safety);
+      top.append(safety,bus,live);
+    }
+    if(guide && services && !grid.querySelector('.kr-ref-bottom-row')){
+      const bottom=document.createElement('div'); bottom.className='kr-ref-bottom-row';
+      const top=grid.querySelector('.kr-ref-top-row');
+      (top?top.parentNode:grid).insertBefore(bottom, top?top.nextSibling:guide);
+      bottom.append(guide,services);
+    }
+  }
+  const obs=new MutationObserver(()=>setTimeout(apply,30));
+  document.addEventListener('DOMContentLoaded',()=>{setTimeout(apply,200);setTimeout(apply,900);setTimeout(apply,1800)});
+  obs.observe(document.body,{childList:true,subtree:true});
 })();
 </script>
 
